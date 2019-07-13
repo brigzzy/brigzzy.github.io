@@ -1,4 +1,4 @@
-baseURL = "https://blog.brigzzy.net"
+baseURL = "https://brigzzy.github.io"
 languageCode = "en-us"
 title = "Brigzzy's Blog"
 theme = "hugo-flex"
