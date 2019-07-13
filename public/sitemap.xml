@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <url>
+    <loc>https://blog.brigzzy.net/post/pentest-resources/</loc>
+    <lastmod>2019-06-23T12:45:53-07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://blog.brigzzy.net/pentest-resources/</loc>
+    <lastmod>2019-06-23T12:12:44-07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://blog.brigzzy.net/post/configuring-bitbucket-ssh-multiple-keys/</loc>
+    <lastmod>2019-06-06T11:30:30-07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://blog.brigzzy.net/post/writup-sp-harrison/</loc>
+    <lastmod>2019-05-25T21:23:54-07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://blog.brigzzy.net/</loc>
+    <lastmod>2019-06-23T12:45:53-07:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://blog.brigzzy.net/categories/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://blog.brigzzy.net/post/</loc>
+    <lastmod>2019-06-23T12:45:53-07:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://blog.brigzzy.net/tags/</loc>
+    <priority>0</priority>
+  </url>
+  
+</urlset>
