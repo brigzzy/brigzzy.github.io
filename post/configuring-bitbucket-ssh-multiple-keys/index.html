@@ -1,0 +1,116 @@
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>
+    
+    Configuring Bitbucket SSH with Multiple Keys | Brigzzy&#39;s Blog
+    
+  </title>
+  
+  
+  <link rel="stylesheet" href="https://blog.brigzzy.net/css/base.min.015ec5a3374a1eeb55ff4586b0c3dcd176c94df4f18271aca151022b1ed157ca.css" integrity="sha256-AV7FozdKHutV/0WGsMPc0XbJTfTxgnGsoVECKx7RV8o=">
+  
+  <meta name="generator" content="Hugo 0.54.0" />
+</head>
+<body>
+  <nav class="u-background">
+  <div class="u-wrapper">
+    <ul class="Banner">
+      <li class="Banner-item Banner-item--title">
+        <a class="Banner-link u-clickable" href="https://blog.brigzzy.net">Brigzzy&#39;s Blog</a>
+      </li>
+      
+      <li class="Banner-item">
+        <a class="Banner-link u-clickable" href="https://blog.brigzzy.net/about/">About</a>
+      </li>
+      
+      <li class="Banner-item">
+        <a class="Banner-link u-clickable" href="https://blog.brigzzy.net/post/">Posts</a>
+      </li>
+      
+      <li class="Banner-item">
+        <a class="Banner-link u-clickable" href="https://blog.brigzzy.net/pentest-resources/">Pentest Resources</a>
+      </li>
+      
+    </ul>
+  </div>
+</nav>
+  <main>
+    <div class="u-wrapper">
+      <div class="u-padding">
+        
+
+<article>
+  <header class="Heading">
+  <h2 class="Heading-title">
+    <a class="Heading-link u-clickable" href="https://blog.brigzzy.net/post/configuring-bitbucket-ssh-multiple-keys/" rel="bookmark">Configuring Bitbucket SSH with Multiple Keys</a>
+  </h2>
+  
+  <time datetime="2019-06-06T11:30:30-07:00">
+    6 June, 2019
+  </time>
+  
+</header>
+  <p>If you use Bitbucket in multiple environments (for example home, and work), you may need to configure multiple SSH keys.  This is because once a key has been added to bitbucket (be it a work account, or a personal one), that key can no longer be used in any other Bitbucket account.</p>
+
+<p>The problem is that when you try and clone a repo via SSH, you may get a permission denied error when you connect to bitbucket.org with a valid key, but not a key that&rsquo;s valid for the repo you&rsquo;re trying to work with.</p>
+
+<p>To get around this, you can make an ssh config file that matches the host, username, and key you want to use.</p>
+
+<ol>
+<li><p>If you haven&rsquo;t already, generate your new SSH key that you want to use with Bitbucket:</p>
+
+<pre><code>ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/id_bitbucket_personal
+</code></pre></li>
+
+<li><p>Add the public key to your Bitbucket account</p></li>
+
+<li><p>Create a <code>~/.ssh/config</code> file</p></li>
+
+<li><p>Add the following lines, substituting your values</p>
+
+<pre><code>Host bitbucket.org
+User &lt;someone&gt;
+Hostname bitbucket.org
+IdentitiesOnly yes
+IdentityFile ~/.ssh/id_bitbucket_personal
+</code></pre>
+
+<blockquote>
+<p>Note that you can use any name in the User field.  You probably don&rsquo;t want to use git, if you&rsquo;re using that as your identity for another account.</p>
+</blockquote></li>
+
+<li><p>Now you can clone the repo from bitbucket.org, replacing the username git with the user you&rsquo;ve configured in the ssh config file.</p>
+
+<pre><code>git clone someone@bitbucket.org:myorg/repo.git
+</code></pre></li>
+</ol>
+
+  
+</article>
+
+
+      </div>
+    </div>
+  </main>
+  
+<footer class="Footer">
+  <div class="u-wrapper">
+    <div class="u-padding">
+      <a href="http://www.wtfpl.net/about/" target=_blank><img src="/wtfpl-badge-4.png"> </a>
+    </div>
+  </div>
+</footer>
+
+  
+</body>
+</html>
