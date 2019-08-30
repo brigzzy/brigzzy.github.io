@@ -1,7 +1,0 @@
-image: atlassian/default-image:2
-
-pipelines:
-  default:
-    - step:
-        script:
-          - echo "Everything is awesome!"

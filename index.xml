@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Brigzzy&#39;s Blog</title>
+    <link>https://brigzzy.github.io/</link>
+    <description>Recent content on Brigzzy&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 06 Jun 2019 11:30:30 -0700</lastBuildDate>
+    
+	<atom:link href="https://brigzzy.github.io/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Configuring Bitbucket SSH with Multiple Keys</title>
+      <link>https://brigzzy.github.io/post/configuring-bitbucket-ssh-multiple-keys/</link>
+      <pubDate>Thu, 06 Jun 2019 11:30:30 -0700</pubDate>
+      
+      <guid>https://brigzzy.github.io/post/configuring-bitbucket-ssh-multiple-keys/</guid>
+      <description>If you use Bitbucket in multiple environments (for example home, and work), you may need to configure multiple SSH keys. This is because once a key has been added to bitbucket (be it a work account, or a personal one), that key can no longer be used in any other Bitbucket account.
+The problem is that when you try and clone a repo via SSH, you may get a permission denied error when you connect to bitbucket.</description>
+    </item>
+    
+    <item>
+      <title>About</title>
+      <link>https://brigzzy.github.io/about/</link>
+      <pubDate>Sat, 25 May 2019 23:21:45 -0700</pubDate>
+      
+      <guid>https://brigzzy.github.io/about/</guid>
+      <description>He&amp;rsquo;s just this guy, you know?</description>
+    </item>
+    
+    <item>
+      <title>Writup - SP: Harrison</title>
+      <link>https://brigzzy.github.io/post/writup-sp-harrison/</link>
+      <pubDate>Sat, 25 May 2019 21:23:54 -0700</pubDate>
+      
+      <guid>https://brigzzy.github.io/post/writup-sp-harrison/</guid>
+      <description>Welcome to my blog! This is my first write up on a vulnhub VM. The VM in question is by Daniel Solstad, and is hosted by vulnhub.com.
+Summary:  Scan the network Scan the host Check out SMB Break out of a restricted shell Enumerate the host Get the root flag  Scan the Network: First we use netdiscover to see where the vulnerable system is.
+netdiscover -r 192.168.99.0/24  Currently scanning: Finished!</description>
+    </item>
+    
+  </channel>
+</rss>

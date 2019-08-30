@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<title>Configuring Bitbucket SSH with Multiple Keys | Brigzzy&#39;s Blog</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.54.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://brigzzy.github.io/post/configuring-bitbucket-ssh-multiple-keys/">
+<link rel="alternate" type="application/rss+xml" href="" title="Brigzzy&#39;s Blog">
+<link rel="stylesheet" href="https://brigzzy.github.io/css/theme.css">
+<link rel="stylesheet" href="https://brigzzy.github.io/css/classes.css">
+
+<header class="dark">
+  <h2><a href="https://brigzzy.github.io/">Brigzzy&#39;s Blog</a></h2>
+  <nav>
+    
+  </nav>
+</header>
+
+<article>
+  <header>
+    <h1><a href="https://brigzzy.github.io/post/configuring-bitbucket-ssh-multiple-keys/">Configuring Bitbucket SSH with Multiple Keys</a></h1>
+    <p class="meta"><time datetime="2019-06-06T11:30:30-07:00">June 06, 2019</time></p>
+  </header>
+  <p>If you use Bitbucket in multiple environments (for example home, and work), you may need to configure multiple SSH keys.  This is because once a key has been added to bitbucket (be it a work account, or a personal one), that key can no longer be used in any other Bitbucket account.</p>
+
+<p>The problem is that when you try and clone a repo via SSH, you may get a permission denied error when you connect to bitbucket.org with a valid key, but not a key that&rsquo;s valid for the repo you&rsquo;re trying to work with.</p>
+
+<p>To get around this, you can make an ssh config file that matches the host, username, and key you want to use.</p>
+
+<ol>
+<li>If you haven&rsquo;t already, generate your new SSH key that you want to use with Bitbucket:
+<code>
+ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/id_bitbucket_personal
+</code></li>
+<li>Add the public key to your Bitbucket account</li>
+<li>Create a <code>~/.ssh/config</code> file</li>
+
+<li><p>Add the following lines, substituting your values</p>
+
+<pre><code>Host bitbucket.org
+User &lt;someone&gt;
+Hostname bitbucket.org
+IdentitiesOnly yes
+IdentityFile ~/.ssh/id_bitbucket_personal
+</code></pre>
+
+<blockquote>
+<p>Note that you can use any name in the User field.  You probably don&rsquo;t want to use git, if you&rsquo;re using that as your identity for another account.</p>
+</blockquote></li>
+
+<li><p>Now you can clone the repo from bitbucket.org, replacing the username git with the user you&rsquo;ve configured in the ssh config file.</p>
+
+<pre><code>git clone someone@bitbucket.org:myorg/repo.git
+</code></pre></li>
+</ol>
+
+</article>
+
+
+
+</html>
