@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 
 
 
@@ -13,14 +12,14 @@
         <head>
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
           <title>Posts RSS | Brigzzy&#39;s Blog</title>
-          <link rel="stylesheet" href="https://blog.brigzzy.net/css/base.min.015ec5a3374a1eeb55ff4586b0c3dcd176c94df4f18271aca151022b1ed157ca.css" integrity="sha256-AV7FozdKHutV/0WGsMPc0XbJTfTxgnGsoVECKx7RV8o=" />
+          <link rel="stylesheet" href="https://blog.brigzzy.net/css/base.min.c3f688f0aa2a0be38870c5f7d472c5f0b3da2acaba79ca08ab6ec4afb2d7419c.css" integrity="sha256-w/aI8KoqC&#43;OIcMX31HLF8LPaKsq6ecoIq27Er7LXQZw=" />
         </head>
         <body>
           <nav class="u-background">
   <div class="u-wrapper">
     <ul class="Banner">
       <li class="Banner-item Banner-item--title">
-        <a class="Banner-link u-clickable" href="https://blog.brigzzy.net">Brigzzy&#39;s Blog</a>
+        <a class="Banner-link u-clickable" href="https://blog.brigzzy.net/">Brigzzy&#39;s Blog</a>
       </li>
       
       <li class="Banner-item">
@@ -29,10 +28,6 @@
       
       <li class="Banner-item">
         <a class="Banner-link u-clickable" href="https://blog.brigzzy.net/post/">Posts</a>
-      </li>
-      
-      <li class="Banner-item">
-        <a class="Banner-link u-clickable" href="https://blog.brigzzy.net/pentest-resources/">Pentest Resources</a>
       </li>
       
     </ul>
@@ -54,7 +49,7 @@
 <footer class="Footer">
   <div class="u-wrapper">
     <div class="u-padding">
-      <a href="http://www.wtfpl.net/about/" target=_blank><img src="/wtfpl-badge-4.png"> </a>
+      <a target="_blank" href="http://www.wtfpl.net/"><img src="/wtfpl-badge-4.png" width="80" height="15" alt="WTFPL" /></a>
     </div>
   </div>
 </footer>
@@ -69,57 +64,8 @@
     <description>Recent content in Posts on Brigzzy&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 23 Jun 2019 12:45:53 -0700</lastBuildDate>
+    <lastBuildDate>Sat, 25 May 2019 21:23:54 -0700</lastBuildDate>
     <atom:link href="https://blog.brigzzy.net/post/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>Pentest Resources</title>
-      <link>https://blog.brigzzy.net/post/pentest-resources/</link>
-      <pubDate>Sun, 23 Jun 2019 12:45:53 -0700</pubDate>
-      <guid>https://blog.brigzzy.net/post/pentest-resources/</guid>
-      <description>&lt;p&gt;I&amp;rsquo;ve published a new static page &lt;a href=&#34;https://blog.brigzzy.net/pentest-resources/&#34;&gt;here&lt;/a&gt;, that I&amp;rsquo;m going to keep up to date with useful pentest resources, as I continue my studies.  Please take a look, and let me know if you have any feedback!&lt;/p&gt;
-</description>
-    </item>
-    <item>
-      <title>Configuring Bitbucket SSH with Multiple Keys</title>
-      <link>https://blog.brigzzy.net/post/configuring-bitbucket-ssh-multiple-keys/</link>
-      <pubDate>Thu, 06 Jun 2019 11:30:30 -0700</pubDate>
-      <guid>https://blog.brigzzy.net/post/configuring-bitbucket-ssh-multiple-keys/</guid>
-      <description>&lt;p&gt;If you use Bitbucket in multiple environments (for example home, and work), you may need to configure multiple SSH keys.  This is because once a key has been added to bitbucket (be it a work account, or a personal one), that key can no longer be used in any other Bitbucket account.&lt;/p&gt;
-
-&lt;p&gt;The problem is that when you try and clone a repo via SSH, you may get a permission denied error when you connect to bitbucket.org with a valid key, but not a key that&amp;rsquo;s valid for the repo you&amp;rsquo;re trying to work with.&lt;/p&gt;
-
-&lt;p&gt;To get around this, you can make an ssh config file that matches the host, username, and key you want to use.&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;&lt;p&gt;If you haven&amp;rsquo;t already, generate your new SSH key that you want to use with Bitbucket:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/id_bitbucket_personal
-&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;Add the public key to your Bitbucket account&lt;/p&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;Create a &lt;code&gt;~/.ssh/config&lt;/code&gt; file&lt;/p&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;Add the following lines, substituting your values&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;Host bitbucket.org
-User &amp;lt;someone&amp;gt;
-Hostname bitbucket.org
-IdentitiesOnly yes
-IdentityFile ~/.ssh/id_bitbucket_personal
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;Note that you can use any name in the User field.  You probably don&amp;rsquo;t want to use git, if you&amp;rsquo;re using that as your identity for another account.&lt;/p&gt;
-&lt;/blockquote&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;Now you can clone the repo from bitbucket.org, replacing the username git with the user you&amp;rsquo;ve configured in the ssh config file.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;git clone someone@bitbucket.org:myorg/repo.git
-&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
-&lt;/ol&gt;
-</description>
-    </item>
     <item>
       <title>Writup - SP: Harrison</title>
       <link>https://blog.brigzzy.net/post/writup-sp-harrison/</link>
