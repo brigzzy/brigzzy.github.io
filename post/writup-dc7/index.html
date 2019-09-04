@@ -63,9 +63,9 @@
   
 </header>
 
-  <p>This is my report for <a href="https://www.vulnhub.com/entry/dc-7,356/">DC7</a>, by <a href="https://twitter.com/@DCAU7">DCAU7</a>.  The first Vulnhub machine I ever did was DC2 (following along with a walkthrough), so this series is a personal favorite of mine.  Without further adéu, let&rsquo;s jump in</p>
+  <p>This is my report for <a href="https://www.vulnhub.com/entry/dc-7,356/">DC7</a>, by <a href="https://twitter.com/@DCAU7">DCAU7</a>.  The first Vulnhub machine I ever did was DC2 (following along with a walkthrough), so this series is a personal favorite of mine.  Without further adéu, let&rsquo;s jump in!</p>
 
-<p>We start by finding the IP with Netdiscover</p>
+<p>We start by finding the IP with Netdiscover:</p>
 
 <pre><code>Currently scanning: Finished!   |   Screen View: Unique Hosts                                                                                                                                                                                
 
@@ -78,7 +78,7 @@ _____________________________________________________________________________
 192.168.99.20   08:00:27:ed:e2:60      1      60  PCS Systemtechnik GmbH
 </code></pre>
 
-<p>Then we scan the target</p>
+<p>Then we scan the target:</p>
 
 <pre><code>Starting Nmap 7.80 ( https://nmap.org ) at 2019-09-03 16:00 PDT
 Nmap scan report for 192.168.99.20
@@ -115,7 +115,7 @@ OS and Service detection performed. Please report any incorrect results at https
 Nmap done: 1 IP address (1 host up) scanned in 12.75 seconds
 </code></pre>
 
-<p>Port 80 is running a Drupal server.  Doing some quick manual enumeration doesn&rsquo;t turn up anything exciting, except for a possible username in the footer.</p>
+<p>Port 80 is running a Drupal server.  Doing some quick manual enumeration doesn&rsquo;t turn up anything exciting, except for a possible username in the footer:</p>
 
 <p><img src="/dc7/drupal.png" alt="" /></p>
 
@@ -123,17 +123,15 @@ Nmap done: 1 IP address (1 host up) scanned in 12.75 seconds
 
 <p><img src="/dc7/twitter.png" alt="" /></p>
 
-<p>Again, no interesting tweets, but there&rsquo;s a link to a github profile!  Going through the code, we find a username and password in the config.php file:</p>
+<p>Again, no interesting tweets, but there&rsquo;s a link to a github profile.  Going through the code, we find a username and password in the config.php file:</p>
 
 <p><img src="/dc7/github.png" alt="" /></p>
 
-<p>That username and password doesn&rsquo;t work on the Drupal site, but it does work for SSH!  Just like that&rsquo;s we&rsquo;ve got a user shell.</p>
+<p>That username and password doesn&rsquo;t work on the Drupal site, but it does work for SSH.  Just like that, we&rsquo;ve got a user shell.</p>
 
-<p>In the user&rsquo;s home folder, we have a folder for backups, and an mbox file.  Catting that, it looks like there&rsquo;s a cron job running every 15 minutes, that&rsquo;s backing up the site, and emailing the report to dc7user:</p>
+<p>In the user&rsquo;s home folder, we have a folder for backups, and an mbox file.  If we cat the mailbox, it looks like there&rsquo;s a cron job running every 15 minutes, that&rsquo;s backing up the site, and emailing the report to dc7user:</p>
 
-<pre><code>dc7user@dc-7:~$ cat mbox
-
-From root@dc-7 Thu Aug 29 17:00:22 2019
+<pre><code>From root@dc-7 Thu Aug 29 17:00:22 2019
 Return-path: &lt;root@dc-7&gt;
 Envelope-to: root@dc-7
 Delivery-date: Thu, 29 Aug 2019 17:00:22 +1000
@@ -159,12 +157,18 @@ gpg: symmetric encryption of '/home/dc7user/backups/website.tar.gz' failed: File
 gpg: symmetric encryption of '/home/dc7user/backups/website.sql' failed: File exists
 </code></pre>
 
-<p>Couple interesting things here: 1) The script is living in /opt/scripts/backups.sh, and 2) it&rsquo;s running as root.  I tried to edit it or append to it, but got permission errors.  Looks like it&rsquo;s owned by the www-data user.  I did some more checks on the user account, but didn&rsquo;t find anything super promising.  Guess we need to take another look at Drupal.</p>
+<p>Couple interesting things here:</p>
+
+<ol>
+<li>The script is living in /opt/scripts/backups.sh, and</li>
+<li>it&rsquo;s running as root.<br /></li>
+</ol>
+
+<p>I tried to edit it or append to it, but got permission errors.  Looks like it&rsquo;s owned by the www-data user.  I did some more checks on the user account, but didn&rsquo;t find anything super promising.  Guess we need to take another look at Drupal.</p>
 
 <p>I ran a tool called Droopescan to see if it turned up anything, but didn&rsquo;t get anything helpful:</p>
 
-<pre><code>~/engagements/dc7 ᐅ droopescan scan drupal -u http://example.org/ -t 32
-[+] Site identified as drupal.
+<pre><code>[+] Site identified as drupal.
 [+] Themes found:
     startupgrowth_lite http://192.168.99.20/themes/startupgrowth_lite/
         http://192.168.99.20/themes/startupgrowth_lite/LICENSE.txt
@@ -186,7 +190,7 @@ gpg: symmetric encryption of '/home/dc7user/backups/website.sql' failed: File ex
 [+] No plugins found.
 </code></pre>
 
-<p>I also hopped back on the box as dc7user and took a closer look through the drupal install.  I managed to get the db creds (which were different than the ones we found in Github), and checked the db for clues.  Nothing too interesting, but we did get the list of valid users on the site:</p>
+<p>I also hopped back on the box as dc7user and took a closer look through the Drupal install.  I managed to get the db creds (which were different than the ones we found in Github), and checked the db for clues.  Nothing too interesting, but we did get the list of valid users on the site:</p>
 
 <pre><code>$databases['default']['default'] = array (
   'database' =&gt; 'd7db',
@@ -211,7 +215,9 @@ gpg: symmetric encryption of '/home/dc7user/backups/website.sql' failed: File ex
 3 rows in set (0.00 sec)
 </code></pre>
 
-<p>Finally, I noticed in dc7user&rsquo;s home directory, a folder called <code>.drush</code>.  <a href="https://www.drush.org/">Drush</a> is a command line shell for Drupal.  I spent quite a bit of time reading about it, before learning that it&rsquo;s sensitive about where you run it from.  When I ran it from the www root folder, I was able to reset the admin user&rsquo;s password.</p>
+<p>Finally, I noticed in dc7user&rsquo;s home directory, a folder called <code>.drush</code>.</p>
+
+<p><a href="https://www.drush.org/">Drush</a> is a command line shell for Drupal.  I spent quite a bit of time reading about it, before learning that it&rsquo;s sensitive about where you run it from.  When I ran it from the www root folder, I was able to reset the admin user&rsquo;s password.</p>
 
 <pre><code>dc7user@dc-7:/var/www/html$ drush user-password admin --password=&quot;test&quot;
 Changed password for admin
@@ -220,7 +226,7 @@ Changed password for admin
 
 <p>And just like that we&rsquo;re in!</p>
 
-<p>Now that we have a Drupal admin account, we need to escalate.  My first thought was that script that was running as root.  I&rsquo;m not super proud of my solution, but I found a plugin for Drupal called <a href="https://www.drupal.org/project/shell">shell</a>, which does exactly what you think it does.  From there, it was a pretty simple matter of appending a reverse shell to the backup script that we found that runs as root:</p>
+<p>Now that we have a Drupal admin account, we need to use it to get a shell.  Remember that script that was running as root?  I&rsquo;m not super proud of my solution, but I found a plugin for Drupal called <a href="https://www.drupal.org/project/shell">shell</a>, which does exactly what you think it does.  From there, it was a pretty simple matter of appending a reverse shell to the backup script that we found that runs as root:</p>
 
 <p><img src="/dc7/webshell.png" alt="" /></p>
 
@@ -282,7 +288,7 @@ If you enjoyed this CTF, send me a tweet via @DCAU7.
 <p>So now that we know how to compromise this box, how could this have been avoided?</p>
 
 <ol>
-<li>Don&rsquo;t commit passwords to a git repo.  Use a secret manager, like <a href="https://www.vaultproject.io/">Hashicorp Vault</a>, or an environment variable file to store sensitive information.  You could also have a solution in place that rejects commits that include sensitive information.</li>
+<li>Don&rsquo;t commit passwords to a git repo.  Use a secret manager, like <a href="https://www.vaultproject.io/">Hashicorp Vault</a>, or an environment variable file (not stored in SC) to store sensitive information.  You could also have a solution in place that rejects commits that include sensitive information.</li>
 <li>Use ACLs or firewalls that only allow SSH connections from trusted networks.</li>
 <li>We found the MySQL credentials pretty easily as the dc7 user.  That user probably doesn&rsquo;t need to be able to read files in the www directory.  Since Drush provides the ability to reset passwords, and other neferious things on the site, that utility should also be restricted to a privileged user.</li>
 </ol>
