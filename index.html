@@ -239,7 +239,7 @@ gpg: symmetric encryption of '/home/dc7user/backups/website.sql' failed: File ex
 
 <p>Finally, I noticed in dc7user&rsquo;s home directory, a folder called <code>.drush</code>.</p>
 
-<p><a href="https://www.drush.org/">Drush</a> is a command line shell for Drupal.  I spent quite a bit of time reading about it, before learning that it&rsquo;s sensitive about where you run it from.  When I ran it from the www root folder, I was able to reset the admin user&rsquo;s password.</p>
+<p><a href="https://www.drush.org/">Drush</a> is a command line shell for Drupal.  I spent quite a bit of time reading about it, before learning that it&rsquo;s sensitive about where you run it from.  When I ran it from the www root folder, I was able to reset the admin user&rsquo;s password:</p>
 
 <pre><code>dc7user@dc-7:/var/www/html$ drush user-password admin --password=&quot;test&quot;
 Changed password for admin
