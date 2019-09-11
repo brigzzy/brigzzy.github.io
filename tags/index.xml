@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<?xml-stylesheet type="text/xsl" href="https://brigzzy.github.io/xml/base.min.xml" ?>
+<?xml-stylesheet type="text/xsl" href="https://blog.brigzzy.ca/xml/base.min.xml" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Tags on Brigzzy&#39;s Blog</title>
-    <link>https://brigzzy.github.io/tags/</link>
+    <link>https://blog.brigzzy.ca/tags/</link>
     <description>Recent content in Tags on Brigzzy&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <atom:link href="https://brigzzy.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://blog.brigzzy.ca/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Writup - DC7</title>
-      <link>https://brigzzy.github.io/post/writup-dc7/</link>
+      <link>https://blog.brigzzy.ca/post/writup-dc7/</link>
       <pubDate>Tue, 03 Sep 2019 21:45:05 -0700</pubDate>
-      <guid>https://brigzzy.github.io/post/writup-dc7/</guid>
+      <guid>https://blog.brigzzy.ca/post/writup-dc7/</guid>
       <description>&lt;p&gt;This is my report for &lt;a href=&#34;https://www.vulnhub.com/entry/dc-7,356/&#34;&gt;DC7&lt;/a&gt;, by &lt;a href=&#34;https://twitter.com/@DCAU7&#34;&gt;DCAU7&lt;/a&gt;.  The first Vulnhub machine I ever did was DC2 (following along with a walkthrough), so this series is a personal favorite of mine.  Without further adéu, let&amp;rsquo;s jump in!&lt;/p&gt;
 
 &lt;p&gt;We start by finding the IP with Netdiscover:&lt;/p&gt;
@@ -67,15 +67,15 @@ Nmap done: 1 IP address (1 host up) scanned in 12.75 seconds
 
 &lt;p&gt;Port 80 is running a Drupal server.  Doing some quick manual enumeration doesn&amp;rsquo;t turn up anything exciting, except for a possible username in the footer:&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;https://brigzzy.github.io/dc7/drupal.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/dc7/drupal.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Doesn&amp;rsquo;t work as a username on the site (as far as we can tell so far), but it looks like a twitter handle.  Sure enough:&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;https://brigzzy.github.io/dc7/twitter.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/dc7/twitter.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Again, no interesting tweets, but there&amp;rsquo;s a link to a github profile.  Going through the code, we find a username and password in the config.php file:&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;https://brigzzy.github.io/dc7/github.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/dc7/github.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;That username and password doesn&amp;rsquo;t work on the Drupal site, but it does work for SSH.  Just like that, we&amp;rsquo;ve got a user shell.&lt;/p&gt;
 
@@ -178,7 +178,7 @@ Changed password for admin
 
 &lt;p&gt;Now that we have a Drupal admin account, we need to use it to get a shell.  Remember that script that was running as root?  I&amp;rsquo;m not super proud of my solution, but I found a plugin for Drupal called &lt;a href=&#34;https://www.drupal.org/project/shell&#34;&gt;shell&lt;/a&gt;, which does exactly what you think it does.  From there, it was a pretty simple matter of appending a reverse shell to the backup script that we found that runs as root:&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;https://brigzzy.github.io/dc7/webshell.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/dc7/webshell.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;Listener:
 nc -lvp 4444
@@ -243,14 +243,14 @@ If you enjoyed this CTF, send me a tweet via @DCAU7.
 &lt;li&gt;We found the MySQL credentials pretty easily as the dc7 user.  That user probably doesn&amp;rsquo;t need to be able to read files in the www directory.  Since Drush provides the ability to reset passwords, and other neferious things on the site, that utility should also be restricted to a privileged user.&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;Any other suggestions?  Thoughts about this writeup?  &lt;a href=&#34;https://brigzzy.github.io/about/&#34;&gt;Let me know!&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Any other suggestions?  Thoughts about this writeup?  &lt;a href=&#34;https://blog.brigzzy.ca/about/&#34;&gt;Let me know!&lt;/a&gt;&lt;/p&gt;
 </description>
     </item>
     <item>
       <title>Configuring Bitbucket SSH with Multiple Keys</title>
-      <link>https://brigzzy.github.io/post/configuring-bitbucket-ssh-multiple-keys/</link>
+      <link>https://blog.brigzzy.ca/post/configuring-bitbucket-ssh-multiple-keys/</link>
       <pubDate>Thu, 06 Jun 2019 11:30:30 -0700</pubDate>
-      <guid>https://brigzzy.github.io/post/configuring-bitbucket-ssh-multiple-keys/</guid>
+      <guid>https://blog.brigzzy.ca/post/configuring-bitbucket-ssh-multiple-keys/</guid>
       <description>&lt;p&gt;If you use Bitbucket in multiple environments (for example home, and work), you may need to configure multiple SSH keys.  This is because once a key has been added to bitbucket (be it a work account, or a personal one), that key can no longer be used in any other Bitbucket account.&lt;/p&gt;
 
 &lt;p&gt;The problem is that when you try and clone a repo via SSH, you may get a permission denied error when you connect to bitbucket.org with a valid key, but not a key that&amp;rsquo;s valid for the repo you&amp;rsquo;re trying to work with.&lt;/p&gt;
@@ -289,9 +289,9 @@ IdentityFile ~/.ssh/id_bitbucket_personal
     </item>
     <item>
       <title>Writup - SP: Harrison</title>
-      <link>https://brigzzy.github.io/post/writup-sp-harrison/</link>
+      <link>https://blog.brigzzy.ca/post/writup-sp-harrison/</link>
       <pubDate>Sat, 25 May 2019 21:23:54 -0700</pubDate>
-      <guid>https://brigzzy.github.io/post/writup-sp-harrison/</guid>
+      <guid>https://blog.brigzzy.ca/post/writup-sp-harrison/</guid>
       <description>
 
 &lt;p&gt;Welcome to my blog!  This is my first write up on a vulnhub VM.  The VM in question is by &lt;a href=&#34;https://dsolstad.com/&#34;&gt;Daniel Solstad&lt;/a&gt;, and is hosted by &lt;a href=&#34;vulnhub.com&#34;&gt;vulnhub.com&lt;/a&gt;.&lt;/p&gt;
