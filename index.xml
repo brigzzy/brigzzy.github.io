@@ -431,13 +431,19 @@ be3306f431dae5ebc93eebb291f4914a
 
 &lt;p&gt;So what could have been done to prevent this?  A couple of things:&lt;/p&gt;
 
-&lt;p&gt;1) Change the default passwords on your installed applications as soon as you install them (ntopng)!  Especially if those default passwords show up on the login page.&lt;br /&gt;
-2) Use the &lt;a href=&#34;https://www.php.net/manual/en/function.basename.php&#34;&gt;PHP basename function&lt;/a&gt; to prevent directory traversal and local file inclusion attacks.&lt;br /&gt;
-3) Patch your servers (Screen)!&lt;br /&gt;
-4) Patch your servers (Apache Struts 2)!
-5) Patch your servers (Linux Kernel 4.4)!
-6) Airgap your AIs (See: Every science fiction movie about an evil AI ever).
-7) Install software or hardware firewalls with a default deny all out policy (to prevent our initial netcat shell)&lt;/p&gt;
+&lt;p&gt;1) Change the default passwords on your installed applications as soon as you install them (ntopng)!  Especially if those default passwords show up on the login page.&lt;/p&gt;
+
+&lt;p&gt;2) Use the &lt;a href=&#34;https://www.php.net/manual/en/function.basename.php&#34;&gt;PHP basename function&lt;/a&gt; to prevent directory traversal and local file inclusion attacks.&lt;/p&gt;
+
+&lt;p&gt;3) Patch your servers (Screen)!&lt;/p&gt;
+
+&lt;p&gt;4) Patch your servers (Apache Struts 2)!&lt;/p&gt;
+
+&lt;p&gt;5) Patch your servers (Linux Kernel 4.4)!&lt;/p&gt;
+
+&lt;p&gt;6) Airgap your AIs (See: Every science fiction movie about an evil AI ever).&lt;/p&gt;
+
+&lt;p&gt;7) Install software or hardware firewalls with a default deny all out policy (to prevent our initial netcat shell)&lt;/p&gt;
 </description>
     </item>
     <item>
