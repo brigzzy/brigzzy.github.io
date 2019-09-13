@@ -2,9 +2,9 @@
 <?xml-stylesheet type="text/xsl" href="https://blog.brigzzy.ca/xml/base.min.xml" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Brigzzy&#39;s Blog</title>
+    <title>Welcome to my Blog on Brigzzy&#39;s Blog</title>
     <link>https://blog.brigzzy.ca/</link>
-    <description>Recent content on Brigzzy&#39;s Blog</description>
+    <description>Recent content in Welcome to my Blog on Brigzzy&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 11 Sep 2019 18:17:01 -0700</lastBuildDate>
