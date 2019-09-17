@@ -2,12 +2,13 @@
 <?xml-stylesheet type="text/xsl" href="https://blog.brigzzy.ca/xml/base.min.xml" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Categories on Brigzzy&#39;s Blog</title>
-    <link>https://blog.brigzzy.ca/categories/</link>
-    <description>Recent content in Categories on Brigzzy&#39;s Blog</description>
+    <title>Guides on Brigzzy&#39;s Blog</title>
+    <link>https://blog.brigzzy.ca/tags/guides/</link>
+    <description>Recent content in Guides on Brigzzy&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <atom:link href="https://blog.brigzzy.ca/categories/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 06 Jun 2019 11:30:30 -0700</lastBuildDate>
+    <atom:link href="https://blog.brigzzy.ca/tags/guides/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Writup - Wintermute</title>
       <link>https://blog.brigzzy.ca/post/writup-wintermute/</link>
