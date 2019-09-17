@@ -23,18 +23,8 @@
   </url>
   
   <url>
-    <loc>https://blog.brigzzy.ca/pentest-resources/</loc>
-    <lastmod>2019-06-23T12:12:44-07:00</lastmod>
-  </url>
-  
-  <url>
     <loc>https://blog.brigzzy.ca/post/configuring-bitbucket-ssh-multiple-keys/</loc>
     <lastmod>2019-06-06T11:30:30-07:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://blog.brigzzy.ca/about/</loc>
-    <lastmod>2019-05-25T23:21:45-07:00</lastmod>
   </url>
   
   <url>
@@ -43,7 +33,15 @@
   </url>
   
   <url>
+    <loc>https://blog.brigzzy.ca/about/</loc>
+  </url>
+  
+  <url>
     <loc>https://blog.brigzzy.ca/categories/</loc>
+  </url>
+  
+  <url>
+    <loc>https://blog.brigzzy.ca/pentest-resources/</loc>
   </url>
   
   <url>
