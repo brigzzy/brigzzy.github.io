@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://blog.brigzzy.ca/categories/</loc>
+    <lastmod>2019-09-11T18:17:01-07:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://blog.brigzzy.ca/post/</loc>
     <lastmod>2019-09-11T18:17:01-07:00</lastmod>
   </url>
@@ -19,6 +24,11 @@
   
   <url>
     <loc>https://blog.brigzzy.ca/</loc>
+    <lastmod>2019-09-11T18:17:01-07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://blog.brigzzy.ca/categories/writeups/</loc>
     <lastmod>2019-09-11T18:17:01-07:00</lastmod>
   </url>
   
