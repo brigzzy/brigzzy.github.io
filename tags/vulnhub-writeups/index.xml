@@ -11,9 +11,9 @@
     <atom:link href="https://blog.brigzzy.ca/tags/vulnhub-writeups/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Writup - Wintermute</title>
-      <link>https://blog.brigzzy.ca/post/writup-wintermute/</link>
+      <link>https://blog.brigzzy.ca/blog/writup-wintermute/</link>
       <pubDate>Wed, 11 Sep 2019 18:17:01 -0700</pubDate>
-      <guid>https://blog.brigzzy.ca/post/writup-wintermute/</guid>
+      <guid>https://blog.brigzzy.ca/blog/writup-wintermute/</guid>
       <description>&lt;p&gt;I&amp;rsquo;m a huge Cyberpunk fan, and I find myself re-reading the Sprawl trilogy every couple of years, so when I learned that there was a &lt;a href=&#34;https://www.vulnhub.com/entry/wintermute-1,239/&#34;&gt;Neuromancer themed VM on Vulnhub&lt;/a&gt;, I had to try it.  It was created by &lt;a href=&#34;https://twitter.com/_creosote&#34;&gt;Melvin C&lt;/a&gt;.&lt;/p&gt;
 
 &lt;p&gt;Before we jump in, this engagement involves pivoting across VMs.  Make sure that you configure it in a way that you can access the Straylight VM from your attacking box, but not the Neuromancer box.  You&amp;rsquo;ll need a second network from Straylight to Neuromancer.  The author includes instructions, but if you prefer a visual example, it looks something like this:&lt;/p&gt;
@@ -448,9 +448,9 @@ be3306f431dae5ebc93eebb291f4914a
     </item>
     <item>
       <title>Writup - DC7</title>
-      <link>https://blog.brigzzy.ca/post/writup-dc7/</link>
+      <link>https://blog.brigzzy.ca/blog/writup-dc7/</link>
       <pubDate>Tue, 03 Sep 2019 21:45:05 -0700</pubDate>
-      <guid>https://blog.brigzzy.ca/post/writup-dc7/</guid>
+      <guid>https://blog.brigzzy.ca/blog/writup-dc7/</guid>
       <description>&lt;p&gt;This is my report for &lt;a href=&#34;https://www.vulnhub.com/entry/dc-7,356/&#34;&gt;DC7&lt;/a&gt;, by &lt;a href=&#34;https://twitter.com/@DCAU7&#34;&gt;DCAU7&lt;/a&gt;.  The first Vulnhub machine I ever did was DC2 (following along with a walkthrough), so this series is a personal favorite of mine.  Without further adéu, let&amp;rsquo;s jump in!&lt;/p&gt;
 
 &lt;p&gt;We start by finding the IP with Netdiscover:&lt;/p&gt;
@@ -686,9 +686,9 @@ If you enjoyed this CTF, send me a tweet via @DCAU7.
     </item>
     <item>
       <title>Configuring Bitbucket SSH with Multiple Keys</title>
-      <link>https://blog.brigzzy.ca/post/configuring-bitbucket-ssh-multiple-keys/</link>
+      <link>https://blog.brigzzy.ca/blog/configuring-bitbucket-ssh-multiple-keys/</link>
       <pubDate>Thu, 06 Jun 2019 11:30:30 -0700</pubDate>
-      <guid>https://blog.brigzzy.ca/post/configuring-bitbucket-ssh-multiple-keys/</guid>
+      <guid>https://blog.brigzzy.ca/blog/configuring-bitbucket-ssh-multiple-keys/</guid>
       <description>&lt;p&gt;If you use Bitbucket in multiple environments (for example home, and work), you may need to configure multiple SSH keys.  This is because once a key has been added to bitbucket (be it a work account, or a personal one), that key can no longer be used in any other Bitbucket account.&lt;/p&gt;
 
 &lt;p&gt;The problem is that when you try and clone a repo via SSH, you may get a permission denied error when you connect to bitbucket.org with a valid key, but not a key that&amp;rsquo;s valid for the repo you&amp;rsquo;re trying to work with.&lt;/p&gt;
@@ -727,9 +727,9 @@ IdentityFile ~/.ssh/id_bitbucket_personal
     </item>
     <item>
       <title>Writup - SP: Harrison</title>
-      <link>https://blog.brigzzy.ca/post/writup-sp-harrison/</link>
+      <link>https://blog.brigzzy.ca/blog/writup-sp-harrison/</link>
       <pubDate>Sat, 25 May 2019 21:23:54 -0700</pubDate>
-      <guid>https://blog.brigzzy.ca/post/writup-sp-harrison/</guid>
+      <guid>https://blog.brigzzy.ca/blog/writup-sp-harrison/</guid>
       <description>
 
 &lt;p&gt;Welcome to my blog!  This is my first write up on a vulnhub VM.  The VM in question is by &lt;a href=&#34;https://dsolstad.com/&#34;&gt;Daniel Solstad&lt;/a&gt;, and is hosted by &lt;a href=&#34;vulnhub.com&#34;&gt;vulnhub.com&lt;/a&gt;.&lt;/p&gt;
