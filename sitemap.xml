@@ -48,11 +48,15 @@
   </url>
   
   <url>
-    <loc>https://blog.brigzzy.ca/about/</loc>
+    <loc>https://blog.brigzzy.ca/pages/about/</loc>
   </url>
   
   <url>
     <loc>https://blog.brigzzy.ca/categories/</loc>
+  </url>
+  
+  <url>
+    <loc>https://blog.brigzzy.ca/pages/</loc>
   </url>
   
   <url>
