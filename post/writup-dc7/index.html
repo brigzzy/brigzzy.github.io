@@ -39,7 +39,7 @@
       </li>
       
       <li class="Banner-item">
-        <a class="Banner-link u-clickable" href="https://blog.brigzzy.ca/about/">About</a>
+        <a class="Banner-link u-clickable" href="https://blog.brigzzy.ca/pages/about/">About</a>
       </li>
       
     </ul>
@@ -126,15 +126,15 @@ Nmap done: 1 IP address (1 host up) scanned in 12.75 seconds
 
 <p>Port 80 is running a Drupal server.  Doing some quick manual enumeration doesn&rsquo;t turn up anything exciting, except for a possible username in the footer:</p>
 
-<p><img src="/dc7/drupal.png" alt="" /></p>
+<p><img src="/images/dc7/drupal.png" alt="" /></p>
 
 <p>Doesn&rsquo;t work as a username on the site (as far as we can tell so far), but it looks like a twitter handle.  Sure enough:</p>
 
-<p><img src="/dc7/twitter.png" alt="" /></p>
+<p><img src="/images/dc7/twitter.png" alt="" /></p>
 
 <p>Again, no interesting tweets, but there&rsquo;s a link to a github profile.  Going through the code, we find a username and password in the config.php file:</p>
 
-<p><img src="/dc7/github.png" alt="" /></p>
+<p><img src="/images/dc7/github.png" alt="" /></p>
 
 <p>That username and password doesn&rsquo;t work on the Drupal site, but it does work for SSH.  Just like that, we&rsquo;ve got a user shell.</p>
 
@@ -237,7 +237,7 @@ Changed password for admin
 
 <p>Now that we have a Drupal admin account, we need to use it to get a shell.  Remember that script that was running as root?  I&rsquo;m not super proud of my solution, but I found a plugin for Drupal called <a href="https://www.drupal.org/project/shell">shell</a>, which does exactly what you think it does.  From there, it was a pretty simple matter of appending a reverse shell to the backup script that we found that runs as root:</p>
 
-<p><img src="/dc7/webshell.png" alt="" /></p>
+<p><img src="/images/dc7/webshell.png" alt="" /></p>
 
 <pre><code>Listener:
 nc -lvp 4444
@@ -327,7 +327,7 @@ If you enjoyed this CTF, send me a tweet via @DCAU7.
 <footer class="Footer">
   <div class="u-wrapper">
     <div class="u-padding">
-      <a href="http://www.wtfpl.net/about/" target=_blank><img src="/wtfpl-badge-4.png"></a>
+      <a href="http://www.wtfpl.net/about/" target=_blank><img src="/images/wtfpl-badge-4.png"></a>
     </div>
   </div>
 </footer>

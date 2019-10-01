@@ -39,7 +39,7 @@
       </li>
       
       <li class="Banner-item">
-        <a class="Banner-link u-clickable" href="https://blog.brigzzy.ca/about/">About</a>
+        <a class="Banner-link u-clickable" href="https://blog.brigzzy.ca/pages/about/">About</a>
       </li>
       
     </ul>
@@ -157,25 +157,25 @@ WINTERMUTE
 
 <p>Chilling! I did a little more enumeration on the page, using dirbuster, and checking the page source, but didn&rsquo;t find anything out of the ordinary.  Then we check the Hadoop server on port 3000:</p>
 
-<p><img src="/wintermute/ntopng-login.png" alt="" /></p>
+<p><img src="/images/wintermute/ntopng-login.png" alt="" /></p>
 
 <p>Looks like the login page for <a href="https://www.ntop.org/products/traffic-analysis/ntop/">ntopng</a>, which seems to be a web frontend for ntop.  A quick Google search turns up admin/admin as the default credentials (in fact, it even shows them on the login page!), and the Straylight sysadmin never changed them.</p>
 
 <p>As we look through the web interface, we can suss out the IP of Neuromancer, by looking at the detected hosts:</p>
 
-<p><img src="/wintermute/ntopng-hosts.png" alt="" /></p>
+<p><img src="/images/wintermute/ntopng-hosts.png" alt="" /></p>
 
 <p>It took me a while to find anything useful here.  Eventually I found that if you look at the Loopback adapter (under Interfaces &gt; lo) and check the flow, you can see a couple of other directories on port 80:</p>
 
-<p><img src="/wintermute/ntopng-flows.png" alt="" /></p>
+<p><img src="/images/wintermute/ntopng-flows.png" alt="" /></p>
 
 <p>Freeside was pretty boring, looked like just a landing page.  Nothing in the source, no hidden subdirectories (that I could find).  Turing-bolo was a lot more interesting though.  Looks like the Straylight team is on to us!</p>
 
-<p><img src="/wintermute/turing-bolo.png" alt="" /></p>
+<p><img src="/images/wintermute/turing-bolo.png" alt="" /></p>
 
 <p>The dropdown on the main page, changes the bolo= parameter in the url.  Also Case&rsquo;s bolo entry mentions that the operator added other files ending in .log for the other team members.  I started checking for LFI, manually and using wfuzz, but wasn&rsquo;t able to find anything.  I ended up having to look at a <a href="https://mzfr.github.io/vulnhub-writeups/2019-07-26-wintermute">walkthrough</a> for a hint.  I was on the right track, but nothing I had tried was quite correct.  bolo=/var/log/mail did the trick:</p>
 
-<p><img src="/wintermute/mail-log.png" alt="" /></p>
+<p><img src="/images/wintermute/mail-log.png" alt="" /></p>
 
 <p>Now that we can print a log on the page, we might be able to connect to the smtp server, and include a php script on the page.  I connected to the server with telnet, and sent some junk mail to a user that probably existed (root@straylight), and checked the web page to see what was being logged.  The body of the message wasn&rsquo;t included, but the subject line is!</p>
 
@@ -397,7 +397,7 @@ nc -l -p 34483 -c &quot;nc 10.0.2.5 34483&quot; &amp;
 
 <p>And now from our attacking box, we can see what&rsquo;s listening.  Port 8080 is Apache Tomcat:</p>
 
-<p><img src="/wintermute/tomcat.png" alt="" /></p>
+<p><img src="/images/wintermute/tomcat.png" alt="" /></p>
 
 <p>Port 8009 wasn&rsquo;t loading for me in my browser, and I wasn&rsquo;t able to see anything with banner grabbing, so I left it for now.</p>
 
@@ -526,7 +526,7 @@ be3306f431dae5ebc93eebb291f4914a
 <footer class="Footer">
   <div class="u-wrapper">
     <div class="u-padding">
-      <a href="http://www.wtfpl.net/about/" target=_blank><img src="/wtfpl-badge-4.png"></a>
+      <a href="http://www.wtfpl.net/about/" target=_blank><img src="/images/wtfpl-badge-4.png"></a>
     </div>
   </div>
 </footer>
