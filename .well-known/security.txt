@@ -1,0 +1,4 @@
+Contact: mailto:brigzzy@brigzzy.org
+Encryption: https://keybase.pub/brigzzy/security_stuff/keybase-public.key
+Preferred-Languages: en
+Canonical: https://blog.brigzzy.ca/.well-known/security.txt
