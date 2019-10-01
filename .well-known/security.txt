@@ -1,4 +1,19 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
 Contact: mailto:brigzzy@brigzzy.org
 Encryption: https://keybase.pub/brigzzy/security_stuff/keybase-public.key
 Preferred-Languages: en
 Canonical: https://blog.brigzzy.ca/.well-known/security.txt
+-----BEGIN PGP SIGNATURE-----
+Version: Keybase OpenPGP v2.1.3
+Comment: https://keybase.io/crypto
+
+wsBcBAABCgAGBQJdk8qKAAoJEIA6xAsXKFnqWLIIAMLaCpETATpHUbNoT10Bs6jY
+ijHUoQrqSkTVjbqAXLxSxmmpVg6SdZdhWfzejiLEhu7oGat2O6yUX68g35LpagZa
+FY01gcuQ6utXuakiWYmnOmAaVDFC0TGOn9rNX0w+3yTNFTvNXpJfy18/lCTfAkQ+
+BV0HCHsWUME0BZY1Lt4p31qHlfF0FaDxZuEYNz6D8HC5+lPRealTokVQsgIAUxgo
+QPC6vSQKPijLfnGbCv1aqflCHnQSfVFK46190/gNFwofFNxi0XfcpSHOSQDWQDVV
+KvP0WVBeIUuPKHt6lDHjj1Pbg4t9VIlpm3UiEfCbnY8jZ+q0uMYyP24zyOn/q/4=
+=OeNr
+-----END PGP SIGNATURE-----
